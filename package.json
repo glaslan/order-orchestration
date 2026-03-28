@@ -1,0 +1,30 @@
+{
+  "name": "order-orchestration",
+  "version": "1.0.0",
+  "description": "Order orchestration for enterprise system development course.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/glaslan/order-orchestration.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/glaslan/order-orchestration/issues"
+  },
+  "homepage": "https://github.com/glaslan/order-orchestration#readme",
+  "devDependencies": {
+    "gulp": "^5.0.1",
+    "gulp-sass": "^6.0.1",
+    "gulp-sourcemaps": "^3.0.0",
+    "sass": "^1.98.0"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.8"
+  }
+}
