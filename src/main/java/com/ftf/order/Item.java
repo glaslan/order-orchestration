@@ -1,31 +1,21 @@
 package com.ftf.order;
 
+import lombok.Getter;
+import lombok.Setter;
+
 public class Item {
 
     // name is used as the key in the JSON/Hashmap
-    private double price;
-    private int quantity;
+    @Getter @Setter private double price;
+    @Getter @Setter private int quantity;
+    @Getter @Setter private String unit;
 
-    public Item(double price, int quantity) {
+    public Item(double price, int quantity, String unit) {
         this.price = price;
         this.quantity = quantity;
-    }
-
-
-    public double getPrice() {
-        return price;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
+        this.unit = unit;
     }
 
 }
+
+
