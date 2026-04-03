@@ -87,7 +87,7 @@ public class IntegrationController {
 
     // Delivery team integration Routes
     // --------------------------------
-    @PostMapping("/api/delivery/send-order");
+    @PostMapping("/api/delivery/send-order")
     public void SendDeliveryOrder(HttpSession session) {
         // TODO Talk with delivery team about what they want from us
     }
