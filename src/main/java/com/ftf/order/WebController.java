@@ -13,4 +13,9 @@ public class WebController {
 
         return "index";
     }
+
+    @GetMapping("/cartdebug")
+    public String cartdebug() {
+        return "cart";
+    }
 }
