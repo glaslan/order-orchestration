@@ -2,21 +2,26 @@ package com.ftf.controllers;
 
 import java.util.HashMap;
 
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ftf.order.InventorySyncLog;
+import com.ftf.order.InventorySyncService;
 import com.ftf.order.Item;
 
 import jakarta.servlet.http.HttpSession;
 
 @RestController
 public class IntegrationController {
-    
-    // TODO Will probably need to change the names of the routes 
+
+    private final InventorySyncService inventorySyncService;
+
+    public IntegrationController(InventorySyncService inventorySyncService) {
+        this.inventorySyncService = inventorySyncService;
+    }
 
 
 
@@ -59,10 +64,9 @@ public class IntegrationController {
 
     // Inventory team integration Routes
     // ---------------------------------
-    @GetMapping("/api/inventory/get-update")
-    public String UpdateDB() {
-        // TODO Talk with inventory team about how they are sending data and how we will udate our clone 
-        return "success";
+    @PostMapping("/api/inventory/sync")
+    public InventorySyncLog syncInventory() {
+        return inventorySyncService.syncInventory();
     }
 
     @PostMapping("/api/inventory/send-update")

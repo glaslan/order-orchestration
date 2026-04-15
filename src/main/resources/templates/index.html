@@ -1,8 +1,7 @@
 <!-- PRODUCTS LIST PAGE -->
 
 <!DOCTYPE html>
-<html lang="en">
-  <html xmlns:th="http://www.thymeleaf.org"></html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="utf-8" />
     <title>Product List</title>
@@ -20,85 +19,53 @@
         </button>
 
         <div class="collapse navbar-collapse justify-content-end" id="navbarMain">
-          
+
           <ul class="navbar-nav me-3">
             <li class="nav-item">
               <a class="nav-link active text-dark" href="#">Products</a>
             </li>
           </ul>
-          
+
           <div class="d-flex gap-2">
             <a href="/cartdebug" class="btn btn-outline-primary">Cart</a>
             <a href="#" class="btn btn-primary">Account</a>
           </div>
-          
+
         </div>
       </div>
     </nav>
-    
+
     <div class="container mt-5">
       <div class="row g-2">
-        <div class="card w-100">
-          <div class="card-body d-flex align-items-center justify-content-between">
-            
-            <div class="d-flex align-items-center">
-              <div>
-                <h5 class="card-title mb-0">Apples</h5>
-                <p class="card-text mb-0">$5.00/5 lbs</p>
-              </div>
-            </div>
-
-            <form action="" class="d-flex align-items-center">
-              <div class="input-group me-3" style="width: 8rem;">
-                <input type="button" value="-" class="btn btn-primary" data-field="quantity">
-                <input type="text" value="1" name="quantity" class="form-control text-center border-primary" />
-                <input type="button" value="+" class="btn btn-primary" data-field="quantity">
-              </div>
-              
-              <button type="submit" class="btn btn-primary">Add to Cart</button>
-            </form>
-          </div>
+        <div th:if="${#lists.isEmpty(products)}" class="col-12">
+          <p class="text-muted">No products available. Try syncing inventory.</p>
         </div>
 
-        <div class="card w-100">
+        <div th:each="product : ${products}" class="card w-100">
           <div class="card-body d-flex align-items-center justify-content-between">
-            
+
             <div class="d-flex align-items-center">
               <div>
-                <h5 class="card-title mb-0">Milk</h5>
-                <p class="card-text mb-0">$2.00/1 litre</p>
+                <h5 class="card-title mb-0" th:text="${product.name}">Product Name</h5>
+                <p class="card-text mb-0">
+                  $<span th:text="${#numbers.formatDecimal(product.price, 1, 2)}">0.00</span>
+                  <span th:if="${product.categoryName}" class="text-muted ms-2" th:text="'— ' + ${product.categoryName}"></span>
+                </p>
+                <small class="text-muted" th:text="'In stock: ' + ${product.quantity}">In stock: 0</small>
               </div>
             </div>
 
-            <form action="" class="d-flex align-items-center">
+            <form th:action="@{/addToCart}" method="post" class="d-flex align-items-center">
+              <input type="hidden" name="name" th:value="${product.name}" />
+              <input type="hidden" name="price" th:value="${product.price}" />
+              <input type="hidden" name="itemId" th:value="${product.sourceItemId}" />
+
               <div class="input-group me-3" style="width: 8rem;">
                 <input type="button" value="-" class="btn btn-primary" data-field="quantity">
                 <input type="text" value="1" name="quantity" class="form-control text-center border-primary" />
                 <input type="button" value="+" class="btn btn-primary" data-field="quantity">
               </div>
-              
-              <button type="submit" class="btn btn-primary">Add to Cart</button>
-            </form>
-          </div>
-        </div>
 
-        <div class="card w-100">
-          <div class="card-body d-flex align-items-center justify-content-between">
-            
-            <div class="d-flex align-items-center">
-              <div>
-                <h5 class="card-title mb-0">Bread</h5>
-                <p class="card-text mb-0">$3.00/1 loaf</p>
-              </div>
-            </div>
-
-            <form action="" class="d-flex align-items-center">
-              <div class="input-group me-3" style="width: 8rem;">
-                <input type="button" value="-" class="btn btn-primary" data-field="quantity">
-                <input type="text" value="1" name="quantity" class="form-control text-center border-primary" />
-                <input type="button" value="+" class="btn btn-primary" data-field="quantity">
-              </div>
-              
               <button type="submit" class="btn btn-primary">Add to Cart</button>
             </form>
           </div>
@@ -109,13 +76,12 @@
     <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 
     <script>
-      // JavaScript to handle quantity increment and decrement (for testing/fun. wil change to java maybe)
       document.querySelectorAll('input[type="button"]').forEach(button => {
         button.addEventListener('click', function() {
           const fieldName = this.getAttribute('data-field');
           const input = this.parentNode.querySelector(`input[name="${fieldName}"]`);
           let currentValue = parseInt(input.value);
-          
+
           if (this.value === '+') {
             input.value = currentValue + 1;
           } else if (this.value === '-' && currentValue > 1) {
