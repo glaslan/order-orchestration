@@ -23,13 +23,11 @@ public class IntegrationController {
         this.inventorySyncService = inventorySyncService;
     }
 
-
-
     // Customer team integration Routes
     // --------------------------------
     @PostMapping("/api/customer/send-order")
     public HashMap<String, Object> SendOrder(HttpSession session) {
-        HashMap<String, InventoryItem> cart = (HashMap<String, InventoryItem>)session.getAttribute("cart");
+        HashMap<String, InventoryItem> cart = (HashMap<String, InventoryItem>) session.getAttribute("cart");
         if (cart == null) {
             // don't want to send anything if the customer has no cart
             return null;
@@ -43,14 +41,14 @@ public class IntegrationController {
         // response.put("Items", cart);
         // response.put("Timestamp", timestamp);
         // reposne.put("Pickup", pickup);
-        
+
         return response;
     }
 
     @GetMapping("/api/customer/order-status")
     public void OrderStatus(HttpSession session, @RequestBody HashMap<String, Object> request) {
-        boolean status = (boolean)request.get("Status");
-        int orderid = (int)request.get("OrderID");
+        boolean status = (boolean) request.get("Status");
+        int orderid = (int) request.get("OrderID");
 
         if (status == true) {
             this.NotifyInventory(session);
@@ -58,13 +56,9 @@ public class IntegrationController {
         }
     }
 
-
-
-
-
     // Inventory team integration Routes
     // ---------------------------------
-    @PostMapping("/api/inventory/sync")
+    @PostMapping("/api/orders/sync")
     public InventorySyncLog syncInventory() {
         return inventorySyncService.syncInventory();
     }
@@ -72,8 +66,9 @@ public class IntegrationController {
     @PostMapping("/api/inventory/send-update")
     public HashMap<String, InventoryItem> NotifyInventory(HttpSession session) {
 
-        // We will send the cart to inventory and based on the items and quantities they will decrement from their stock
-        HashMap<String, InventoryItem> cart = (HashMap<String, InventoryItem>)session.getAttribute("cart");
+        // We will send the cart to inventory and based on the items and quantities they
+        // will decrement from their stock
+        HashMap<String, InventoryItem> cart = (HashMap<String, InventoryItem>) session.getAttribute("cart");
         if (cart == null) {
             // inventory will have to handle this
             return null;
@@ -82,12 +77,6 @@ public class IntegrationController {
         // returns cart should be in JSON format
         return cart;
     }
-
-
-
-
-
-
 
     // Delivery team integration Routes
     // --------------------------------
