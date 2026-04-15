@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ftf.order.InventoryItem;
 import com.ftf.order.InventorySyncLog;
 import com.ftf.order.InventorySyncService;
-import com.ftf.order.Item;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -29,7 +29,7 @@ public class IntegrationController {
     // --------------------------------
     @PostMapping("/api/customer/send-order")
     public HashMap<String, Object> SendOrder(HttpSession session) {
-        HashMap<String, Item> cart = (HashMap<String, Item>)session.getAttribute("cart");
+        HashMap<String, InventoryItem> cart = (HashMap<String, InventoryItem>)session.getAttribute("cart");
         if (cart == null) {
             // don't want to send anything if the customer has no cart
             return null;
@@ -70,10 +70,10 @@ public class IntegrationController {
     }
 
     @PostMapping("/api/inventory/send-update")
-    public HashMap<String, Item> NotifyInventory(HttpSession session) {
+    public HashMap<String, InventoryItem> NotifyInventory(HttpSession session) {
 
         // We will send the cart to inventory and based on the items and quantities they will decrement from their stock
-        HashMap<String, Item> cart = (HashMap<String, Item>)session.getAttribute("cart");
+        HashMap<String, InventoryItem> cart = (HashMap<String, InventoryItem>)session.getAttribute("cart");
         if (cart == null) {
             // inventory will have to handle this
             return null;

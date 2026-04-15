@@ -7,21 +7,26 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.ftf.order.Item;
+import com.ftf.order.InventoryItem;
 
 import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class OrderController {
-    
+
     @PostMapping("/addToCart")
     public String AddToCart(@RequestParam String name, @RequestParam double price, @RequestParam int quantity, @RequestParam int itemId, HttpSession session) {
-        HashMap<String, Item> cart = (HashMap<String, Item>)session.getAttribute("cart");
+        HashMap<String, InventoryItem> cart = (HashMap<String, InventoryItem>)session.getAttribute("cart");
         if (cart == null) {
-            cart = new HashMap<String, Item>();
+            cart = new HashMap<String, InventoryItem>();
         }
 
-        cart.put(name, new Item(name, price, quantity, itemId));
+        InventoryItem cartItem = new InventoryItem();
+        cartItem.setName(name);
+        cartItem.setPrice(java.math.BigDecimal.valueOf(price));
+        cartItem.setQuantity(quantity);
+        cartItem.setSourceItemId((long) itemId);
+        cart.put(name, cartItem);
         session.setAttribute("cart", cart);
 
         // TODO also need to add it to the order manifest db
@@ -32,12 +37,12 @@ public class OrderController {
 
     @PostMapping("/removeFromCart")
     public String RemoveFromCart(@RequestParam String name, @RequestParam int quantity, HttpSession session) {
-        HashMap<String, Item> cart = (HashMap<String, Item>)session.getAttribute("cart");
+        HashMap<String, InventoryItem> cart = (HashMap<String, InventoryItem>)session.getAttribute("cart");
         if (cart == null) {
             return "failure";
         }
 
-        Item item = cart.get(name);
+        InventoryItem item = cart.get(name);
         if (item != null) {
             // if the quantity is less then the amount of cart then decrement the amount in the cart
             if (item.getQuantity() > quantity) {
