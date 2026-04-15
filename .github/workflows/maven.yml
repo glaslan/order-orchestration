@@ -32,9 +32,9 @@ jobs:
 
   deploy-to-test:
     runs-on: ubuntu-latest
+    needs: build
     steps:
     - uses: actions/checkout@v4
     - name: Trigger test deployment webhook
-      if: success()
       run: |
-        curl -X POST --max-time 30 --write-out "%{http_code}" http://142.93.152.32:20348/hooks/deploy-orders-to-test
+        curl -X POST --max-time 20 --write-out "%{http_code}" http://142.93.152.32:20348/hooks/deploy-orders-to-test
