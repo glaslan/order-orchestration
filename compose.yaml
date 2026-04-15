@@ -1,1 +1,5 @@
-services: {}
+services:
+  web:
+    image: albertrodriguezdev/hello-world-web:latest
+    ports:
+      - "8080:6767"
