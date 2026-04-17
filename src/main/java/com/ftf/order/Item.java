@@ -11,13 +11,17 @@ public class Item {
     @Getter @Setter private int quantity;
     @Getter @Setter private int id;
     @Getter @Setter private String name;
+    @Getter @Setter private Category category;
 
-    public Item(String name, double price, int quantity, int id) {
+    public Item(String name, double price, int quantity, int id, Category category) {
         this.name = name;
         this.price = price;
         this.quantity = quantity;
         this.id = id;
+        this.category = category;
     }
 
 
 }
+
+
