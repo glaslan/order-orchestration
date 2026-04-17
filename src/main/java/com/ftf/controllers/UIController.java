@@ -1,21 +1,31 @@
 package com.ftf.controllers;
 
-
+import java.util.List;
 import java.util.ArrayList;
+
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.http.ResponseEntity;
 
+import com.ftf.order.InventoryItem;
+import com.ftf.order.InventoryItemRepository;
 import com.ftf.order.Category;
 import com.ftf.order.Item;
 
 @Controller
 public class UIController {
 
+    private final InventoryItemRepository inventoryItemRepository;
+
+    public UIController(InventoryItemRepository inventoryItemRepository) {
+        this.inventoryItemRepository = inventoryItemRepository;
+    }
+
     @GetMapping("/")
     public String index(Model model) {
+        // List<InventoryItem> products = inventoryItemRepository.findByActiveTrue();
         // redirect to the products page 
         return "redirect:/products";
     }
@@ -34,8 +44,6 @@ public class UIController {
         products.add(new Item("Orange", 2.99, 0, 3, new Category("Produce", 0)));
         
         model.addAttribute("products", products);
-
         return "index";
     }
-    
 }

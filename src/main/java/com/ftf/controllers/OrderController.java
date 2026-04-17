@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.ftf.order.InventoryItem;
 import com.ftf.order.HelperFunctions;
 import com.ftf.order.Item;
 
@@ -15,17 +16,29 @@ import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class OrderController {
-    
+
     @PostMapping("/addToCart")
-    public ResponseEntity<String> AddToCart(@RequestParam String name, @RequestParam double price, @RequestParam int quantity, @RequestParam int itemId, @RequestParam String category, HttpSession session) {
-        HashMap<String, Item> cart = (HashMap<String, Item>)session.getAttribute("cart");
+
+    public ResponseEntity<String> AddToCart(@RequestParam String name, @RequestParam double price, @RequestParam int quantity, @RequestParam int itemId, HttpSession session) {
+        HashMap<String, InventoryItem> cart = (HashMap<String, InventoryItem>)session.getAttribute("cart");
+
+    // public ResponseEntity<String> AddToCart(@RequestParam String name, @RequestParam double price, @RequestParam int quantity, @RequestParam int itemId, @RequestParam String category, HttpSession session) {
+    //     HashMap<String, Item> cart = (HashMap<String, Item>)session.getAttribute("cart");
+
         if (cart == null) {
-            cart = new HashMap<String, Item>();
+            cart = new HashMap<String, InventoryItem>();
         }
 
+        InventoryItem cartItem = new InventoryItem();
+        cartItem.setName(name);
+        cartItem.setPrice(java.math.BigDecimal.valueOf(price));
+        cartItem.setQuantity(quantity);
+        cartItem.setSourceItemId((long) itemId);
+        cart.put(name, cartItem);
         // TODO Check if item quantity is available in the database
 
-        cart.put(name, new Item(name, price, quantity, itemId, category));
+        // cart.put(name, new Item(name, price, quantity, itemId, category));
+
         session.setAttribute("cart", cart);
 
         // TODO also need to add it to the order manifest db
@@ -36,12 +49,16 @@ public class OrderController {
 
     @PostMapping("/removeFromCart")
     public ResponseEntity<String> RemoveFromCart(@RequestParam String name, @RequestParam int quantity, HttpSession session) {
-        HashMap<String, Item> cart = (HashMap<String, Item>)session.getAttribute("cart");
+        HashMap<String, InventoryItem> cart = (HashMap<String, InventoryItem>)session.getAttribute("cart");
+
+    // public ResponseEntity<String> RemoveFromCart(@RequestParam String name, @RequestParam int quantity, HttpSession session) {
+    //     HashMap<String, Item> cart = (HashMap<String, Item>)session.getAttribute("cart");
+
         if (cart == null) {
             return ResponseEntity.badRequest().body("No cart found");
         }
 
-        Item item = cart.get(name);
+        InventoryItem item = cart.get(name);
         if (item != null) {
             // if the quantity is less then the amount of cart then decrement the amount in the cart
             if (item.getQuantity() > quantity) {

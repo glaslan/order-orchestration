@@ -8,26 +8,54 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ftf.order.Item;
+import com.ftf.order.InventoryItem;
+import com.ftf.order.InventorySyncLog;
+import com.ftf.order.InventorySyncService;
 
 import jakarta.servlet.http.HttpSession;
 
 @RestController
 public class IntegrationController {
-    
-    // TODO Will probably need to change the names of the routes 
 
+    private final InventorySyncService inventorySyncService;
 
-    @PostMapping("/api/customer/order-status")
-    public void OrderStatus(HttpSession session, @RequestBody HashMap<String, Object> request) {
-        boolean Status = (boolean)request.get("Status");
-        int OrderID = (int)request.get("OrderID");
-
-        if (Status == true) {
-            this.NotifyInventory(session);
-            session.setAttribute("cart", null);
-        }
+    public IntegrationController(InventorySyncService inventorySyncService) {
+        this.inventorySyncService = inventorySyncService;
     }
+
+    // Customer team integration Routes
+    // --------------------------------
+    @PostMapping("/api/customer/send-order")
+    public HashMap<String, Object> SendOrder(HttpSession session) {
+        HashMap<String, InventoryItem> cart = (HashMap<String, InventoryItem>) session.getAttribute("cart");
+        if (cart == null) {
+            // don't want to send anything if the customer has no cart
+            return null;
+        }
+
+        HashMap<String, Object> response = new HashMap<String, Object>();
+
+        // TODO get these value to put in the reponse
+        // response.put("OrderID", orderId);
+        // response.put("CustomerID", customerId);
+        // response.put("Items", cart);
+        // response.put("Timestamp", timestamp);
+        // reposne.put("Pickup", pickup);
+
+        return response;
+    }
+
+    @GetMapping("/api/customer/order-status")
+    public void OrderStatus(HttpSession session, @RequestBody HashMap<String, Object> request) {
+        boolean status = (boolean) request.get("Status");
+        int orderid = (int) request.get("OrderID");
+
+        // if (Status == true) {
+        //     this.NotifyInventory(session);
+        //     session.setAttribute("cart", null);
+        // }
+    }
+
 
     @PostMapping("/has")
     public boolean Has(HttpSession session, @RequestBody ArrayList<Item> request) {
@@ -45,22 +73,19 @@ public class IntegrationController {
     }
 
 
-
-
-
     // Inventory team integration Routes
     // ---------------------------------
-    @GetMapping("/api/inventory/get-update")
-    public String UpdateDB() {
-        // TODO Talk with inventory team about how they are sending data and how we will udate our clone 
-        return "success";
+    @PostMapping("/api/orders/sync")
+    public InventorySyncLog syncInventory() {
+        return inventorySyncService.syncInventory();
     }
 
     @PostMapping("/api/inventory/send-update")
-    public HashMap<String, Item> NotifyInventory(HttpSession session) {
+    public HashMap<String, InventoryItem> NotifyInventory(HttpSession session) {
 
-        // We will send the cart to inventory and based on the items and quantities they will decrement from their stock
-        HashMap<String, Item> cart = (HashMap<String, Item>)session.getAttribute("cart");
+        // We will send the cart to inventory and based on the items and quantities they
+        // will decrement from their stock
+        HashMap<String, InventoryItem> cart = (HashMap<String, InventoryItem>) session.getAttribute("cart");
         if (cart == null) {
             // inventory will have to handle this
             return null;
@@ -69,12 +94,6 @@ public class IntegrationController {
         // returns cart should be in JSON format
         return cart;
     }
-
-
-
-
-
-
 
     // Delivery team integration Routes
     // --------------------------------
