@@ -1,11 +1,11 @@
 package com.ftf.controllers;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ftf.order.InventoryItem;
@@ -50,11 +50,28 @@ public class IntegrationController {
         boolean status = (boolean) request.get("Status");
         int orderid = (int) request.get("OrderID");
 
-        if (status == true) {
-            this.NotifyInventory(session);
-            session.setAttribute("cart", null);
-        }
+        // if (Status == true) {
+        //     this.NotifyInventory(session);
+        //     session.setAttribute("cart", null);
+        // }
     }
+
+
+    @PostMapping("/has")
+    public boolean Has(HttpSession session, @RequestBody ArrayList<Item> request) {
+        
+
+        for (Item item : request) {
+            // TODO Check if item quantity availabe in database
+            // get item from database
+            // if (item.getQuantity() < dbItem.getQuantity()) {
+            // return false;
+            // }
+        }
+
+        return true;
+    }
+
 
     // Inventory team integration Routes
     // ---------------------------------
