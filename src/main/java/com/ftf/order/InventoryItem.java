@@ -29,6 +29,10 @@ public class InventoryItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    //remove source ID, they dont need it - they string match to remove items from inventory
+    //when we send a sale to inv, they will return success/failure for the update
+    //we will control the choice to pull database again 
+
     // inventory team's item id
     @Column(name = "source_item_id", nullable = false, unique = true)
     private Long sourceItemId;
