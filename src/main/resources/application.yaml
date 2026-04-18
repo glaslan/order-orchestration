@@ -9,3 +9,12 @@ spring:
     hibernate:
       ddl-auto: update
     open-in-view: false
+
+jwt:
+  secret: ${JWT_SECRET:farm2fork-secret-key}
+
+teams:
+  customer:
+    url: ${CUSTOMER_URL:http://147.182.145.77:3000}
+  delivery:
+    url: ${DELIVERY_URL:http://147.182.145.77:3000}
