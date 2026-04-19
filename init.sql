@@ -26,6 +26,45 @@ CREATE INDEX idx_inventory_item_name ON inventory_item (name);
 CREATE INDEX idx_inventory_item_active ON inventory_item (is_active);
 CREATE INDEX idx_inventory_item_category_id ON inventory_item (category_id);
 
+-- persistent cart: one row per customer+item, updated in place as quantity changes
+CREATE TABLE cart_item (
+    id BIGSERIAL PRIMARY KEY,
+    customer_id VARCHAR(255) NOT NULL,
+    inventory_item_id BIGINT NOT NULL REFERENCES inventory_item(id),
+    quantity INT NOT NULL DEFAULT 1,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_cart_quantity_positive CHECK (quantity > 0),
+    CONSTRAINT uq_cart_customer_item UNIQUE (customer_id, inventory_item_id)
+);
+
+CREATE INDEX idx_cart_customer ON cart_item (customer_id);
+
+-- one row per submitted order
+CREATE TABLE order_manifest (
+    id BIGSERIAL PRIMARY KEY,
+    customer_id VARCHAR(255) NOT NULL,
+    customer_name VARCHAR(255),
+    customer_email VARCHAR(255),
+    status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
+    pickup BOOLEAN NOT NULL DEFAULT FALSE,
+    error_message TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_order_manifest_customer ON order_manifest (customer_id);
+
+-- snapshot of items at time of order; price is locked in so a price change doesn't affect old orders
+CREATE TABLE order_item (
+    id BIGSERIAL PRIMARY KEY,
+    order_manifest_id BIGINT NOT NULL REFERENCES order_manifest(id),
+    inventory_item_id BIGINT NOT NULL REFERENCES inventory_item(id),
+    product_name VARCHAR(255) NOT NULL,
+    price NUMERIC(10,2) NOT NULL,
+    quantity INT NOT NULL,
+    CONSTRAINT chk_order_item_quantity_positive CHECK (quantity > 0)
+);
+
 -- sync log for updating database
 CREATE TABLE inventory_sync_log (
     id BIGSERIAL PRIMARY KEY,

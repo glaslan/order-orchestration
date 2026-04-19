@@ -3,7 +3,7 @@ services:
     build: .
     container_name: spring_app
     ports:
-      - "8080:8080"
+      - "6767:8080"
     depends_on:
       - postgres
     environment:
