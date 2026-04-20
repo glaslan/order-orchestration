@@ -6,6 +6,19 @@
     <meta charset="utf-8" />
     <title>Product List</title>
     <link rel="stylesheet" th:href="@{/css/custom.css}">
+    <style>
+      /* Hide arrows for Chrome, Safari, Edge, Opera */
+      .no-spinners::-webkit-outer-spin-button,
+      .no-spinners::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      /* Hide arrows for Firefox */
+      .no-spinners {
+        -moz-appearance: textfield;
+      }
+    </style>
   </head>
   <body>
      <nav class="navbar navbar-expand-lg sticky-top navbar-light bg-white border-bottom">
@@ -22,7 +35,7 @@
 
           <ul class="navbar-nav me-3">
             <li class="nav-item">
-              <a class="nav-link active text-dark" href="#">Products</a>
+              <a class="nav-link active text-dark" href="/">Products</a>
             </li>
           </ul>
 
@@ -45,29 +58,48 @@
           <div class="card-body d-flex align-items-center justify-content-between">
 
             <div class="d-flex align-items-center">
-              <div>
-                <h5 class="card-title mb-0" th:text="${product.name}">Product Name</h5>
-                <p class="card-text mb-0">
-                  $<span th:text="${#numbers.formatDecimal(product.price, 1, 2)}">0.00</span>
-                  <span th:if="${product.categoryName}" class="text-muted ms-2" th:text="'— ' + ${product.categoryName}"></span>
-                </p>
-                <small class="text-muted" th:text="'In stock: ' + ${product.quantity}">In stock: 0</small>
-              </div>
-            </div>
+          <div>
+            <h5 class="card-title fw-bold mb-1 text-primary" th:text="${product.name}">Product Name</h5>
+            
+            <p class="text-primary mb-2" th:text="${product.categoryName}">Category</p>
+            
+            <span class="badge rounded-pill bg-light text-secondary border border-secondary fw-normal" 
+                  th:text="${product.quantity} + ' in stock'">0 in stock</span>
+          </div>
+        </div>
 
             <form th:action="@{/addToCart}" method="post" class="d-flex align-items-center">
               <input type="hidden" name="name" th:value="${product.name}" />
               <input type="hidden" name="price" th:value="${product.price}" />
               <input type="hidden" name="itemId" th:value="${product.sourceItemId}" />
+              <!-- Use d-flex flex-column to stack items vertically -->
+              <div class="d-flex flex-column align-items-end">
+                
+                <!-- Price at the top -->
+                <p class="mb-2 text-secondary fw-bold" th:text="'$' + ${#numbers.formatDecimal(product.price, 1, 2)} + '/1 loaf'">
+                  (No Price Specified)
+                </p>
 
-              <div class="input-group me-3" style="width: 8rem;">
-                <input type="button" value="-" class="btn btn-primary" data-field="quantity">
-                <input type="text" value="1" name="quantity" class="form-control text-center border-primary" />
-                <input type="button" value="+" class="btn btn-primary" data-field="quantity">
+                <!-- Quantity and Add to Cart grouped together -->
+                <div class="d-flex align-items-center">
+                  <div class="input-group me-2" style="width: 8rem;">
+                    <input type="button" value="-" class="btn btn-primary" data-field="quantity" disabled>
+                    <input type="number" 
+                      value="1" 
+                      min="1" 
+                      th:max="${product.quantity}" 
+                      name="quantity" 
+                      class="form-control text-center border-primary no-spinners" />
+                    <input type="button" value="+" class="btn btn-primary" data-field="quantity" 
+                      th:disabled="${product.quantity <= 1}">
+                  </div>
+                
+                  <button type="submit" class="btn btn-primary">Add to Cart</button>
+                </div>
+
               </div>
-
-              <button type="submit" class="btn btn-primary">Add to Cart</button>
             </form>
+            
           </div>
         </div>
       </div>
@@ -79,14 +111,54 @@
       document.querySelectorAll('input[type="button"]').forEach(button => {
         button.addEventListener('click', function() {
           const fieldName = this.getAttribute('data-field');
-          const input = this.parentNode.querySelector(`input[name="${fieldName}"]`);
+          const group = this.closest('.input-group');
+          const input = group.querySelector(`input[name="${fieldName}"]`);
+          const btnMinus = group.querySelector('input[value="-"]');
+          const btnPlus = group.querySelector('input[value="+"]');
+          
           let currentValue = parseInt(input.value);
+          let maxValue = parseInt(input.getAttribute('max'));
+          let minValue = parseInt(input.getAttribute('min')) || 1;
 
           if (this.value === '+') {
-            input.value = currentValue + 1;
-          } else if (this.value === '-' && currentValue > 1) {
-            input.value = currentValue - 1;
+            if (currentValue < maxValue) {
+              currentValue++;
+              input.value = currentValue;
+            }
+          } else if (this.value === '-') {
+            if (currentValue > minValue) {
+              currentValue--;
+              input.value = currentValue;
+            }
           }
+
+          btnMinus.disabled = (currentValue <= minValue);
+
+          btnPlus.disabled = (currentValue >= maxValue);
+        });
+      });
+      document.querySelectorAll('input[name="quantity"]').forEach(input => {
+        input.addEventListener('change', function() {
+          const group = this.closest('.input-group');
+          const btnMinus = group.querySelector('input[value="-"]');
+          const btnPlus = group.querySelector('input[value="+"]');
+          
+          let val = parseInt(this.value);
+          let max = parseInt(this.getAttribute('max'));
+          let min = parseInt(this.getAttribute('min')) || 1;
+
+          // Validate the manual input
+          if (isNaN(val) || val < min) {
+            val = min;
+          } else if (val > max) {
+            val = max;
+          }
+          
+          this.value = val;
+
+          // Update button states
+          btnMinus.disabled = (val <= min);
+          btnPlus.disabled = (val >= max);
         });
       });
     </script>

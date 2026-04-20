@@ -1,13 +1,10 @@
-package com.ftf.controllers;
+package com.ftf.order;
 
 import java.util.List;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-
-import com.ftf.order.InventoryItem;
-import com.ftf.order.InventoryItemRepository;
 
 @Controller
 public class UIController {
