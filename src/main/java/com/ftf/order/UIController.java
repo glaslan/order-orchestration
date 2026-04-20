@@ -6,13 +6,21 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+
 @Controller
 public class UIController {
 
     private final InventoryItemRepository inventoryItemRepository;
+    private final CartItemRepository cartItemRepository;
+    private final JwtService jwtService;
 
-    public UIController(InventoryItemRepository inventoryItemRepository) {
+
+    public UIController(InventoryItemRepository inventoryItemRepository, CartItemRepository cartItemRepository, JwtService jwtService) {
         this.inventoryItemRepository = inventoryItemRepository;
+        this.cartItemRepository = cartItemRepository;
+        this.jwtService = jwtService;
     }
 
     @GetMapping("/")
@@ -25,6 +33,17 @@ public class UIController {
         List<InventoryItem> products = inventoryItemRepository.findByActiveTrue();
         model.addAttribute("products", products);
         return "index";
+    }
+
+    @GetMapping("/cart")
+    public String cart(Model model, HttpSession session, HttpServletRequest request) {
+
+        CustomerInfo customer = CustomerInfo.getCustomer(session, request, jwtService);
+        if (customer == null) return null;
+
+        List<CartItem> cartItems = cartItemRepository.findByCustomerId(customer.getId());
+        model.addAttribute("items", cartItems);
+        return "cart";
     }
 
     @GetMapping("/cartdebug")
