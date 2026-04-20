@@ -1,4 +1,4 @@
-package com.ftf.controllers;
+package com.ftf.order;
 
 import java.util.HashMap;
 import java.util.List;
@@ -10,15 +10,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import com.ftf.order.CartItem;
-import com.ftf.order.CartItemRepository;
-import com.ftf.order.CheckoutService;
-import com.ftf.order.CustomerInfo;
-import com.ftf.order.InventoryItem;
-import com.ftf.order.InventoryItemRepository;
-import com.ftf.order.JwtService;
-import com.ftf.order.OrderManifest;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -60,7 +51,8 @@ public class OrderController {
                                             @RequestParam int quantity,
                                             HttpSession session,
                                             HttpServletRequest request) {
-        CustomerInfo customer = getCustomer(session, request);
+
+        CustomerInfo customer = CustomerInfo.getCustomer(session, request, jwtService);
         if (customer == null) return ResponseEntity.status(401).body("Authentication required");
 
         // Look up by sourceItemId — that's what the UI sends via the hidden input
@@ -93,7 +85,7 @@ public class OrderController {
                                                  @RequestParam int quantity,
                                                  HttpSession session,
                                                  HttpServletRequest request) {
-        CustomerInfo customer = getCustomer(session, request);
+        CustomerInfo customer = CustomerInfo.getCustomer(session, request, jwtService);
         if (customer == null) return ResponseEntity.status(401).body("Authentication required");
 
         Optional<InventoryItem> invOpt = inventoryItemRepository.findBySourceItemId(itemId);
@@ -117,7 +109,7 @@ public class OrderController {
 
     @GetMapping("/getCart")
     public ResponseEntity<?> GetCart(HttpSession session, HttpServletRequest request) {
-        CustomerInfo customer = getCustomer(session, request);
+        CustomerInfo customer = CustomerInfo.getCustomer(session, request, jwtService);
         if (customer == null) return ResponseEntity.status(401).body("Authentication required");
 
         List<CartItem> cartItems = cartItemRepository.findByCustomerId(customer.getId());
@@ -143,7 +135,7 @@ public class OrderController {
                                       @RequestParam(defaultValue = "false") boolean pickup,
                                       HttpSession session,
                                       HttpServletRequest request) {
-        CustomerInfo customer = getCustomer(session, request);
+        CustomerInfo customer = CustomerInfo.getCustomer(session, request, jwtService);
         if (customer == null) return ResponseEntity.status(401).body("Authentication required");
 
         try {
@@ -154,10 +146,4 @@ public class OrderController {
         }
     }
 
-    // Checks session first (set via POST /auth/session), then falls back to Authorization header.
-    private CustomerInfo getCustomer(HttpSession session, HttpServletRequest request) {
-        CustomerInfo fromSession = (CustomerInfo) session.getAttribute("customer");
-        if (fromSession != null) return fromSession;
-        return jwtService.extractFromHeader(request.getHeader("Authorization"));
-    }
 }
