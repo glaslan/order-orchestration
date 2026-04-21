@@ -108,12 +108,12 @@
 
   <script th:src="@{/scss/bootstrap/dist/js/bootstrap.bundle.min.js}"></script>
   <script>
-    function showToast(message) {
+    function showToast(message, type = 'success') {
       const container = document.getElementById('toast-container');
       if (!container) return;
 
       const toast = document.createElement('div');
-      toast.className = 'toast align-items-center text-white bg-success border-0 mb-2';
+      toast.className = `toast align-items-center text-white bg-${type} border-0 mb-2`;
       toast.setAttribute('role', 'alert');
       toast.setAttribute('aria-live', 'polite');
       toast.setAttribute('aria-atomic', 'true');
@@ -140,7 +140,8 @@
       }
     }
 
-    // intercept add-to-cart forms
+    // intercept add-to-cart forms - doesnt redirect user,
+    // instead performs POST in the background and displays result as a toast
     document.querySelectorAll('form[th\\:action], form[action]').forEach(form => {
       const action = form.getAttribute('action') || form.getAttribute('th:action');
       if (!action || !action.includes('/addToCart')) return;
@@ -151,10 +152,9 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: fd
-        }).then(r => r.text())
-          .then(txt => {
-            showToast('Added to cart');
-            // reset quantity input to 1 and update buttons
+        }).then(r => r.text().then(txt => {
+          if (r.ok) {
+            showToast('Added to cart', 'success');
             const qty = this.querySelector('input[name="quantity"]');
             if (qty) {
               qty.value = 1;
@@ -163,7 +163,10 @@
               if (btnMinus) btnMinus.disabled = true;
               if (btnPlus) btnPlus.disabled = (parseInt(qty.getAttribute('max') || '1') <= 1);
             }
-          }).catch(() => showToast('Error'));
+          } else {
+            showToast(txt, 'danger');
+          }
+        })).catch(() => showToast('Error', 'danger'));
       });
     });
 
