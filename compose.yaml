@@ -3,7 +3,7 @@ services:
     build: .
     container_name: spring_app
     ports:
-      - "6767:8080"
+      - "6767:6767"
     depends_on:
       - postgres
     environment:
@@ -17,7 +17,7 @@ services:
     image: postgres:16
     container_name: postgres_db
     ports:
-      - "6767:5432"
+      - "5432:5432"
     environment:
       POSTGRES_DB: orderdb
       POSTGRES_USER: postgres
