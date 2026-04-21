@@ -1,17 +1,18 @@
 package com.ftf.order.controller;
 
-import com.ftf.order.model.CartItem;
-import com.ftf.order.model.CustomerInfo;
-import com.ftf.order.model.InventoryItem;
-import com.ftf.order.repository.CartItemRepository;
-import com.ftf.order.repository.InventoryItemRepository;
-import com.ftf.order.service.JwtService;
-
 import java.util.List;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import com.ftf.order.model.CartItem;
+import com.ftf.order.model.CartItemWithInventory;
+import com.ftf.order.model.CustomerInfo;
+import com.ftf.order.model.InventoryItem;
+import com.ftf.order.repository.CartItemRepository;
+import com.ftf.order.repository.InventoryItemRepository;
+import com.ftf.order.service.JwtService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;

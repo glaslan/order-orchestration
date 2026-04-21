@@ -1,4 +1,4 @@
-package com.ftf.order;
+package com.ftf.order.model;
 
 public class CartItemWithInventory {
     private final CartItem cartItem;
