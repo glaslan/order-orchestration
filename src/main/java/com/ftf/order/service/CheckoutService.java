@@ -1,15 +1,5 @@
 package com.ftf.order.service;
 
-import com.ftf.order.model.CartItem;
-import com.ftf.order.model.CustomerInfo;
-import com.ftf.order.model.InventoryItem;
-import com.ftf.order.model.OrderItem;
-import com.ftf.order.model.OrderManifest;
-import com.ftf.order.repository.CartItemRepository;
-import com.ftf.order.repository.InventoryItemRepository;
-import com.ftf.order.repository.OrderItemRepository;
-import com.ftf.order.repository.OrderManifestRepository;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -21,6 +11,18 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+
+import com.ftf.order.config.HelperFunctions;
+import com.ftf.order.model.CartItem;
+import com.ftf.order.model.CustomerInfo;
+import com.ftf.order.model.DeliveryOrder;
+import com.ftf.order.model.InventoryItem;
+import com.ftf.order.model.OrderItem;
+import com.ftf.order.model.OrderManifest;
+import com.ftf.order.repository.CartItemRepository;
+import com.ftf.order.repository.InventoryItemRepository;
+import com.ftf.order.repository.OrderItemRepository;
+import com.ftf.order.repository.OrderManifestRepository;
 
 @Service
 public class CheckoutService {
@@ -115,6 +117,8 @@ public class CheckoutService {
                 orderManifestRepository.save(manifest);
 
                 sendToDelivery(manifest, customer, orderItems, pickup);
+                HelperFunctions helper = new HelperFunctions();
+                helper.SendSoldItems("http://134.122.40.121:5180/api/inventory_intelligence/inventory/sold_items", orderItems, inventoryItemRepository, restTemplate);
 
                 manifest.setStatus("DELIVERED");
                 manifest.setUpdatedAt(LocalDateTime.now());
@@ -145,20 +149,23 @@ public class CheckoutService {
         try {
             List<Map<String, Object>> itemList = orderItems.stream().map(oi -> {
                 Map<String, Object> item = new HashMap<>();
-                item.put("productName", oi.getProductName());
+                InventoryItem inventoryItem = inventoryItemRepository.findById(oi.getInventoryItemId()).orElse(null);
+                
+                item.put("name", oi.getProductName());
                 item.put("price", oi.getPrice());
                 item.put("quantity", oi.getQuantity());
+                item.put("id", oi.getInventoryItemId());
+                if (inventoryItem != null) {
+                    item.put("category", inventoryItem.getCategoryName());
+                } else {
+                    item.put("category", "Unknown");
+                }
                 return item;
             }).toList();
 
-            Map<String, Object> deliveryPayload = new HashMap<>();
-            deliveryPayload.put("orderId", manifest.getId());
-            deliveryPayload.put("customerId", customer.getId());
-            deliveryPayload.put("pickup", pickup);
-            deliveryPayload.put("items", itemList);
+            DeliveryOrder order = new DeliveryOrder(manifest.getId(), customer.getId(), LocalDateTime.now().toString(), pickup, itemList);
 
-            // TODO: confirm delivery team's endpoint path once they confirm
-            restTemplate.postForObject(deliveryUrl + "/delivery/order", deliveryPayload, Void.class);
+            restTemplate.postForObject(deliveryUrl + "/api/delivery-requests", order, Void.class);
         } catch (Exception e) {
             // Delivery notification failing should not roll back a successful payment
             System.err.println("Delivery notification failed for order " + manifest.getId() + ": " + e.getMessage());
