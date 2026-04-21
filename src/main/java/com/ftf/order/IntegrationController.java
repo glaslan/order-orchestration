@@ -10,18 +10,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ftf.order.CartItem;
-import com.ftf.order.CartItemRepository;
-import com.ftf.order.CheckoutService;
-import com.ftf.order.CustomerInfo;
-import com.ftf.order.InventoryItem;
-import com.ftf.order.InventoryItemRepository;
-import com.ftf.order.InventorySyncLog;
-import com.ftf.order.InventorySyncService;
-import com.ftf.order.JwtAuthFilter;
-import com.ftf.order.JwtService;
-import com.ftf.order.OrderManifest;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
