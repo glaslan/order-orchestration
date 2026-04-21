@@ -1,4 +1,7 @@
-package com.ftf.order;
+package com.ftf.order.model;
+
+import com.ftf.order.OrderApplication;
+import com.ftf.order.service.JwtService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -32,4 +35,3 @@ public class CustomerInfo {
         return jwtService.extractFromHeader(request.getHeader("Authorization"));
     }
 }
-

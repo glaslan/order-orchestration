@@ -1,4 +1,4 @@
-package com.ftf.order;
+package com.ftf.order.model;
 
 import java.util.HashMap;
 
@@ -16,5 +16,5 @@ public class Order {
 
     // use setter's to set information
     public Order() {}
-    
+
 }

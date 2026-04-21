@@ -1,4 +1,7 @@
-package com.ftf.order;
+package com.ftf.order.config;
+
+import com.ftf.order.model.InventoryItem;
+import com.ftf.order.model.Order;
 
 import java.util.HashMap;
 

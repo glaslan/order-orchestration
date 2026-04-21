@@ -1,4 +1,4 @@
-package com.ftf.order;
+package com.ftf.order.model;
 
 import java.time.LocalDateTime;
 

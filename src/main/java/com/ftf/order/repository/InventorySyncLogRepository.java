@@ -1,8 +1,10 @@
-package com.ftf.order;
+package com.ftf.order.repository;
 
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.ftf.order.model.InventorySyncLog;
 
 //inherits from JPARepository, gives us database operations our of the box
 //includes:

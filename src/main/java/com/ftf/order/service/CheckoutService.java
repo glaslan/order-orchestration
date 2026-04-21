@@ -1,4 +1,14 @@
-package com.ftf.order;
+package com.ftf.order.service;
+
+import com.ftf.order.model.CartItem;
+import com.ftf.order.model.CustomerInfo;
+import com.ftf.order.model.InventoryItem;
+import com.ftf.order.model.OrderItem;
+import com.ftf.order.model.OrderManifest;
+import com.ftf.order.repository.CartItemRepository;
+import com.ftf.order.repository.InventoryItemRepository;
+import com.ftf.order.repository.OrderItemRepository;
+import com.ftf.order.repository.OrderManifestRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
