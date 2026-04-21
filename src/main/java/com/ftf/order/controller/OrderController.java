@@ -1,14 +1,5 @@
 package com.ftf.order.controller;
 
-import com.ftf.order.model.CartItem;
-import com.ftf.order.model.CustomerInfo;
-import com.ftf.order.model.InventoryItem;
-import com.ftf.order.model.OrderManifest;
-import com.ftf.order.repository.CartItemRepository;
-import com.ftf.order.repository.InventoryItemRepository;
-import com.ftf.order.service.CheckoutService;
-import com.ftf.order.service.JwtService;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +10,15 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import com.ftf.order.model.CartItem;
+import com.ftf.order.model.CustomerInfo;
+import com.ftf.order.model.InventoryItem;
+import com.ftf.order.model.OrderManifest;
+import com.ftf.order.repository.CartItemRepository;
+import com.ftf.order.repository.InventoryItemRepository;
+import com.ftf.order.service.CheckoutService;
+import com.ftf.order.service.JwtService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -32,9 +32,9 @@ public class OrderController {
     private final JwtService jwtService;
 
     public OrderController(CartItemRepository cartItemRepository,
-                           InventoryItemRepository inventoryItemRepository,
-                           CheckoutService checkoutService,
-                           JwtService jwtService) {
+                        InventoryItemRepository inventoryItemRepository,
+                        CheckoutService checkoutService,
+                        JwtService jwtService) {
         this.cartItemRepository = cartItemRepository;
         this.inventoryItemRepository = inventoryItemRepository;
         this.checkoutService = checkoutService;
@@ -45,7 +45,7 @@ public class OrderController {
     // manually adding an Authorization header on every request.
     @PostMapping("/auth/session")
     public ResponseEntity<String> setSession(@org.springframework.web.bind.annotation.RequestBody String token,
-                                             HttpSession session) {
+                                            HttpSession session) {
         try {
             CustomerInfo customer = jwtService.parse(token.trim().replace("\"", ""));
             session.setAttribute("customer", customer);
@@ -76,9 +76,19 @@ public class OrderController {
 
         if (existing.isPresent()) {
             CartItem ci = existing.get();
+
+            //validate that quantity entered is valid
+            int newQuantity = ci.getQuantity() + quantity;
+            if(quantity <= 0) return ResponseEntity.badRequest().body("Quantity must be at least 1");
+            int invQuantity = inv.getQuantity();
+            if(newQuantity > invQuantity) return ResponseEntity.badRequest().body("Only " + invQuantity +  " in stock");
+
             ci.setQuantity(ci.getQuantity() + quantity);
             cartItemRepository.save(ci);
         } else {
+            if (quantity <= 0) return ResponseEntity.badRequest().body("Quantity must be at least 1");
+            int invQuantity = inv.getQuantity();
+            if (quantity > invQuantity) return ResponseEntity.badRequest().body("Only " + invQuantity + " in stock");
             CartItem ci = new CartItem();
             ci.setCustomerId(customer.getId());
             ci.setInventoryItemId(inv.getId());
@@ -91,9 +101,9 @@ public class OrderController {
 
     @PostMapping("/removeFromCart")
     public ResponseEntity<String> RemoveFromCart(@RequestParam Long itemId,
-                                                 @RequestParam int quantity,
-                                                 HttpSession session,
-                                                 HttpServletRequest request) {
+                                                @RequestParam int quantity,
+                                                HttpSession session,
+                                                HttpServletRequest request) {
         CustomerInfo customer = CustomerInfo.getCustomer(session, request, jwtService);
         if (customer == null) return ResponseEntity.status(401).body("Authentication required");
 
@@ -141,9 +151,9 @@ public class OrderController {
 
     @PostMapping("/checkout")
     public ResponseEntity<?> Checkout(@RequestParam(required = false) String subscriptionId,
-                                      @RequestParam(defaultValue = "false") boolean pickup,
-                                      HttpSession session,
-                                      HttpServletRequest request) {
+                                    @RequestParam(defaultValue = "false") boolean pickup,
+                                    HttpSession session,
+                                    HttpServletRequest request) {
         CustomerInfo customer = CustomerInfo.getCustomer(session, request, jwtService);
         if (customer == null) return ResponseEntity.status(401).body("Authentication required");
 

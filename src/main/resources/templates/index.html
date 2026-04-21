@@ -17,6 +17,7 @@
       /* Hide arrows for Firefox */
       .no-spinners {
         -moz-appearance: textfield;
+        appearance: textfield;
       }
     </style>
   </head>
@@ -105,7 +106,7 @@
       </div>
     </div>
 
-    <script th:src="@{/scss/bootstrap/dist/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
     <script>
       function showToast(message) {
         const container = document.getElementById('toast-container');
