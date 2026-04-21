@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -38,7 +40,8 @@ public class CheckoutService {
     }
 
     @Transactional
-    public OrderManifest checkout(CustomerInfo customer, String subscriptionId, boolean pickup) {
+    public OrderManifest checkout(CustomerInfo customer, String subscriptionId,
+                                  String bearerToken, boolean pickup) {
         List<CartItem> cartItems = cartItemRepository.findByCustomerId(customer.getId());
         if (cartItems.isEmpty()) {
             throw new RuntimeException("Cart is empty");
@@ -95,7 +98,9 @@ public class CheckoutService {
 
             @SuppressWarnings("unchecked")
             Map<String, Object> billingResponse = restTemplate.postForObject(
-                    customerUrl + "/billing/manifest", billingPayload, Map.class);
+                    customerUrl + "/billing/manifest",
+                    buildRequest(billingPayload, bearerToken),
+                    Map.class);
 
             boolean paid = billingResponse != null && Boolean.TRUE.equals(billingResponse.get("success"));
 
@@ -104,7 +109,7 @@ public class CheckoutService {
                 manifest.setUpdatedAt(LocalDateTime.now());
                 orderManifestRepository.save(manifest);
 
-                sendToDelivery(manifest, customer, orderItems, pickup);
+                sendToDelivery(manifest, customer, orderItems, pickup, bearerToken);
 
                 manifest.setStatus("DELIVERED");
                 manifest.setUpdatedAt(LocalDateTime.now());
@@ -131,7 +136,7 @@ public class CheckoutService {
     }
 
     private void sendToDelivery(OrderManifest manifest, CustomerInfo customer,
-                                List<OrderItem> orderItems, boolean pickup) {
+                                List<OrderItem> orderItems, boolean pickup, String bearerToken) {
         try {
             List<Map<String, Object>> itemList = orderItems.stream().map(oi -> {
                 Map<String, Object> item = new HashMap<>();
@@ -148,10 +153,20 @@ public class CheckoutService {
             deliveryPayload.put("items", itemList);
 
             // TODO: confirm delivery team's endpoint path once they confirm
-            restTemplate.postForObject(deliveryUrl + "/delivery/order", deliveryPayload, Void.class);
+            restTemplate.postForObject(deliveryUrl + "/delivery/order",
+                    buildRequest(deliveryPayload, bearerToken), Void.class);
         } catch (Exception e) {
             // Delivery notification failing should not roll back a successful payment
             System.err.println("Delivery notification failed for order " + manifest.getId() + ": " + e.getMessage());
         }
+    }
+
+    // Wraps a payload in an HttpEntity with an Authorization header when a token is available.
+    private <T> HttpEntity<T> buildRequest(T payload, String bearerToken) {
+        HttpHeaders headers = new HttpHeaders();
+        if (bearerToken != null) {
+            headers.set("Authorization", bearerToken);
+        }
+        return new HttpEntity<>(payload, headers);
     }
 }

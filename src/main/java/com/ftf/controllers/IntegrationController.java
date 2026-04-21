@@ -18,6 +18,7 @@ import com.ftf.order.InventoryItem;
 import com.ftf.order.InventoryItemRepository;
 import com.ftf.order.InventorySyncLog;
 import com.ftf.order.InventorySyncService;
+import com.ftf.order.JwtAuthFilter;
 import com.ftf.order.JwtService;
 import com.ftf.order.OrderManifest;
 
@@ -49,26 +50,26 @@ public class IntegrationController {
     // --------------------------------
 
     // Called by the customer team when a subscription order should be created.
-    // They provide customerId + subscriptionId; we build the order and charge billing.
+    // The customer team must send their JWT so we can verify identity and forward it to other teams.
     @PostMapping("/orders")
-    public ResponseEntity<?> CreateOrder(@RequestBody HashMap<String, Object> body) {
-        String customerId = (String) body.get("customerId");
-        String subscriptionId = (String) body.get("subscriptionId");
+    public ResponseEntity<?> CreateOrder(@RequestBody HashMap<String, Object> body,
+                                         HttpServletRequest request) {
+        CustomerInfo customer = (CustomerInfo) request.getAttribute(JwtAuthFilter.CUSTOMER_ATTR);
+        if (customer == null) return ResponseEntity.status(401).body("Authentication required");
 
-        if (customerId == null || subscriptionId == null) {
-            return ResponseEntity.badRequest().body("customerId and subscriptionId are required");
+        String subscriptionId = (String) body.get("subscriptionId");
+        if (subscriptionId == null) {
+            return ResponseEntity.badRequest().body("subscriptionId is required");
         }
 
-        List<CartItem> cartItems = cartItemRepository.findByCustomerId(customerId);
+        List<CartItem> cartItems = cartItemRepository.findByCustomerId(customer.getId());
         if (cartItems.isEmpty()) {
             return ResponseEntity.badRequest().body("No cart found for customer");
         }
 
-        CustomerInfo customer = new CustomerInfo();
-        customer.setId(customerId);
-
         try {
-            OrderManifest manifest = checkoutService.checkout(customer, subscriptionId, false);
+            OrderManifest manifest = checkoutService.checkout(customer, subscriptionId,
+                    request.getHeader("Authorization"), false);
             return ResponseEntity.ok(manifest);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

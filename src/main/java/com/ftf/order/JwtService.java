@@ -1,7 +1,11 @@
 package com.ftf.order;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -22,20 +26,32 @@ public class JwtService {
         this.key = new SecretKeySpec(keyBytes, "HmacSHA256");
     }
 
+    // TODO(customer-team): add exp claim to tokens (recommended: 3600s).
+    // JJWT enforces it automatically once present — no code change needed here.
     public CustomerInfo parse(String token) {
-        Claims claims = Jwts.parser()
-                .verifyWith((javax.crypto.SecretKey) key)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+        try {
+            Claims claims = Jwts.parser()
+                    .clockSkewSeconds(30)
+                    .verifyWith((javax.crypto.SecretKey) key)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
 
-        CustomerInfo info = new CustomerInfo();
-        info.setId(claims.get("id", String.class));
-        info.setName(claims.get("name", String.class));
-        info.setEmail(claims.get("email", String.class));
-        info.setPhone(claims.get("phone", String.class));
-        info.setRole(claims.get("role", String.class));
-        return info;
+            CustomerInfo info = new CustomerInfo();
+            info.setId(claims.get("id", String.class));
+            info.setName(claims.get("name", String.class));
+            info.setEmail(claims.get("email", String.class));
+            info.setPhone(claims.get("phone", String.class));
+            info.setRole(claims.get("role", String.class));
+            return info;
+
+        } catch (ExpiredJwtException e) {
+            throw new InvalidTokenException(InvalidTokenException.Reason.EXPIRED, "Token has expired", e);
+        } catch (SignatureException e) {
+            throw new InvalidTokenException(InvalidTokenException.Reason.INVALID_SIGNATURE, "Token signature is invalid", e);
+        } catch (MalformedJwtException | UnsupportedJwtException | IllegalArgumentException e) {
+            throw new InvalidTokenException(InvalidTokenException.Reason.MALFORMED, "Token is malformed", e);
+        }
     }
 
     // Extracts customer from Authorization: Bearer <token> header; returns null on any failure.
@@ -45,7 +61,7 @@ public class JwtService {
         }
         try {
             return parse(authorizationHeader.substring(7));
-        } catch (Exception e) {
+        } catch (InvalidTokenException e) {
             return null;
         }
     }

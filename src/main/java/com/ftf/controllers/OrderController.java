@@ -17,6 +17,7 @@ import com.ftf.order.CheckoutService;
 import com.ftf.order.CustomerInfo;
 import com.ftf.order.InventoryItem;
 import com.ftf.order.InventoryItemRepository;
+import com.ftf.order.JwtAuthFilter;
 import com.ftf.order.JwtService;
 import com.ftf.order.OrderManifest;
 
@@ -47,12 +48,20 @@ public class OrderController {
     public ResponseEntity<String> setSession(@org.springframework.web.bind.annotation.RequestBody String token,
                                              HttpSession session) {
         try {
-            CustomerInfo customer = jwtService.parse(token.trim().replace("\"", ""));
+            String rawToken = token.trim().replace("\"", "");
+            CustomerInfo customer = jwtService.parse(rawToken);
             session.setAttribute("customer", customer);
+            session.setAttribute("jwt_raw", rawToken);
             return ResponseEntity.ok("Session established for " + customer.getName());
         } catch (Exception e) {
             return ResponseEntity.status(401).body("Invalid token: " + e.getMessage());
         }
+    }
+
+    @PostMapping("/auth/logout")
+    public ResponseEntity<String> logout(HttpSession session) {
+        session.invalidate();
+        return ResponseEntity.ok("Logged out");
     }
 
     @PostMapping("/addToCart")
@@ -60,7 +69,7 @@ public class OrderController {
                                             @RequestParam int quantity,
                                             HttpSession session,
                                             HttpServletRequest request) {
-        CustomerInfo customer = getCustomer(session, request);
+        CustomerInfo customer = getCustomer(request);
         if (customer == null) return ResponseEntity.status(401).body("Authentication required");
 
         // Look up by sourceItemId — that's what the UI sends via the hidden input
@@ -93,7 +102,7 @@ public class OrderController {
                                                  @RequestParam int quantity,
                                                  HttpSession session,
                                                  HttpServletRequest request) {
-        CustomerInfo customer = getCustomer(session, request);
+        CustomerInfo customer = getCustomer(request);
         if (customer == null) return ResponseEntity.status(401).body("Authentication required");
 
         Optional<InventoryItem> invOpt = inventoryItemRepository.findBySourceItemId(itemId);
@@ -117,7 +126,7 @@ public class OrderController {
 
     @GetMapping("/getCart")
     public ResponseEntity<?> GetCart(HttpSession session, HttpServletRequest request) {
-        CustomerInfo customer = getCustomer(session, request);
+        CustomerInfo customer = getCustomer(request);
         if (customer == null) return ResponseEntity.status(401).body("Authentication required");
 
         List<CartItem> cartItems = cartItemRepository.findByCustomerId(customer.getId());
@@ -143,21 +152,26 @@ public class OrderController {
                                       @RequestParam(defaultValue = "false") boolean pickup,
                                       HttpSession session,
                                       HttpServletRequest request) {
-        CustomerInfo customer = getCustomer(session, request);
+        CustomerInfo customer = getCustomer(request);
         if (customer == null) return ResponseEntity.status(401).body("Authentication required");
 
+        // Use header token if present; fall back to the raw token stored at session login.
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken == null) bearerToken = "Bearer " + session.getAttribute("jwt_raw");
+
         try {
-            OrderManifest manifest = checkoutService.checkout(customer, subscriptionId, pickup);
+            OrderManifest manifest = checkoutService.checkout(customer, subscriptionId, bearerToken, pickup);
             return ResponseEntity.ok(manifest);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    // Checks session first (set via POST /auth/session), then falls back to Authorization header.
-    private CustomerInfo getCustomer(HttpSession session, HttpServletRequest request) {
-        CustomerInfo fromSession = (CustomerInfo) session.getAttribute("customer");
-        if (fromSession != null) return fromSession;
+    // Reads the CustomerInfo resolved by JwtAuthFilter. Falls back to direct header
+    // parsing for safety during development when the filter may not be active.
+    private CustomerInfo getCustomer(HttpServletRequest request) {
+        CustomerInfo fromFilter = (CustomerInfo) request.getAttribute(JwtAuthFilter.CUSTOMER_ATTR);
+        if (fromFilter != null) return fromFilter;
         return jwtService.extractFromHeader(request.getHeader("Authorization"));
     }
 }
