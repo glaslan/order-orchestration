@@ -1,4 +1,6 @@
-package com.ftf.order;
+package com.ftf.order.service;
+
+import com.ftf.order.model.CustomerInfo;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

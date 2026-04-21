@@ -1,4 +1,9 @@
-package com.ftf.order;
+package com.ftf.order.service;
+
+import com.ftf.order.model.InventoryItem;
+import com.ftf.order.model.InventorySyncLog;
+import com.ftf.order.repository.InventoryItemRepository;
+import com.ftf.order.repository.InventorySyncLogRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
