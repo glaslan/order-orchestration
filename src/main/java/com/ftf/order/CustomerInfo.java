@@ -10,3 +10,4 @@ public class CustomerInfo {
     private String phone;
     private String role;
 }
+
