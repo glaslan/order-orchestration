@@ -1,17 +1,18 @@
 package com.ftf.order.controller;
 
-import com.ftf.order.model.CartItem;
-import com.ftf.order.model.CustomerInfo;
-import com.ftf.order.model.InventoryItem;
-import com.ftf.order.repository.CartItemRepository;
-import com.ftf.order.repository.InventoryItemRepository;
-import com.ftf.order.service.JwtService;
-
 import java.util.List;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import com.ftf.order.model.CartItem;
+import com.ftf.order.model.CartItemWithInventory;
+import com.ftf.order.model.CustomerInfo;
+import com.ftf.order.model.InventoryItem;
+import com.ftf.order.repository.CartItemRepository;
+import com.ftf.order.repository.InventoryItemRepository;
+import com.ftf.order.service.JwtService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -44,17 +45,40 @@ public class UIController {
 
     @GetMapping("/cart")
     public String cart(Model model, HttpSession session, HttpServletRequest request) {
-
         CustomerInfo customer = CustomerInfo.getCustomer(session, request, jwtService);
         if (customer == null) return null;
 
         List<CartItem> cartItems = cartItemRepository.findByCustomerId(customer.getId());
-        model.addAttribute("items", cartItems);
+
+        // Create a list of objects containing both cart item and inventory item data
+        List<CartItemWithInventory> cartItemsWithInventory = cartItems.stream()
+                .map(cartItem -> {
+                    InventoryItem inventoryItem = inventoryItemRepository.findById(cartItem.getInventoryItemId())
+                            .orElse(null);
+                    return new CartItemWithInventory(cartItem, inventoryItem);
+                })
+                .toList();
+
+        model.addAttribute("items", cartItemsWithInventory);
         return "cart";
     }
 
     @GetMapping("/cartdebug")
-    public String cartdebug() {
+    public String cartdebug(Model model) {
+
+        List<CartItem> cartItems = cartItemRepository.findByCustomerId("123456789");
+        System.out.println("sise"+cartItems.size());
+
+        // Create a list of objects containing both cart item and inventory item data
+        List<CartItemWithInventory> cartItemsWithInventory = cartItems.stream()
+                .map(cartItem -> {
+                    InventoryItem inventoryItem = inventoryItemRepository.findById(cartItem.getInventoryItemId())
+                            .orElse(null);
+                    return new CartItemWithInventory(cartItem, inventoryItem);
+                })
+                .toList();
+
+        model.addAttribute("items", cartItemsWithInventory);
         return "cart";
     }
 }
