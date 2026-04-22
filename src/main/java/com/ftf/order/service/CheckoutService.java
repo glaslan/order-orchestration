@@ -151,15 +151,9 @@ public class CheckoutService {
                 Map<String, Object> item = new HashMap<>();
                 InventoryItem inventoryItem = inventoryItemRepository.findById(oi.getInventoryItemId()).orElse(null);
                 
-                item.put("name", oi.getProductName());
-                item.put("price", oi.getPrice());
+                item.put("item_name", oi.getProductName());
                 item.put("quantity", oi.getQuantity());
-                item.put("id", oi.getInventoryItemId());
-                if (inventoryItem != null) {
-                    item.put("category", inventoryItem.getCategoryName());
-                } else {
-                    item.put("category", "Unknown");
-                }
+                item.put("external_item_id", oi.getInventoryItemId());
                 return item;
             }).toList();
 
