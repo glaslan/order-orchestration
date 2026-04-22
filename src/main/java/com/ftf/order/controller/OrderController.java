@@ -23,6 +23,8 @@ import com.ftf.order.service.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
+import static java.sql.DriverManager.println;
+
 @Controller
 public class OrderController {
 
@@ -41,27 +43,33 @@ public class OrderController {
         this.jwtService = jwtService;
     }
 
-    // Stores the customer's validated JWT in their session so web UI forms work without
-    // manually adding an Authorization header on every request.
     @PostMapping("/auth/session")
     public ResponseEntity<String> setSession(@org.springframework.web.bind.annotation.RequestBody String token,
-                                            HttpSession session) {
+                                            HttpSession session,
+                                            HttpServletRequest request) {
         try {
-            CustomerInfo customer = jwtService.parse(token.trim().replace("\"", ""));
-            session.setAttribute("customer", customer);
-            return ResponseEntity.ok("Session established for " + customer.getName());
+            CustomerInfo customer = jwtService.parse(token);
+            session.invalidate();
+            HttpSession fresh = request.getSession(true);
+            fresh.setAttribute("customer", customer);
+            return ResponseEntity.ok("Session established ID: " + fresh.getId() + fresh.getAttribute("customer"));
         } catch (Exception e) {
-            return ResponseEntity.status(401).body("Invalid token: " + e.getMessage());
+            return ResponseEntity.status(401).body("Authentication failed");
         }
+    }
+
+    @PostMapping("/auth/logout")
+    public ResponseEntity<String> logout(HttpSession session) {
+        session.invalidate();
+        return ResponseEntity.ok("Logged out");
     }
 
     @PostMapping("/addToCart")
     public ResponseEntity<String> AddToCart(@RequestParam Long itemId,
                                             @RequestParam int quantity,
-                                            HttpSession session,
-                                            HttpServletRequest request) {
+                                            HttpSession session) {
 
-        CustomerInfo customer = CustomerInfo.getCustomer(session, request, jwtService);
+        CustomerInfo customer = CustomerInfo.getCustomer(session);
         if (customer == null) return ResponseEntity.status(401).body("Authentication required");
 
         // Look up by sourceItemId — that's what the UI sends via the hidden input
@@ -102,9 +110,8 @@ public class OrderController {
     @PostMapping("/removeFromCart")
     public ResponseEntity<String> RemoveFromCart(@RequestParam Long itemId,
                                                 @RequestParam int quantity,
-                                                HttpSession session,
-                                                HttpServletRequest request) {
-        CustomerInfo customer = CustomerInfo.getCustomer(session, request, jwtService);
+                                                HttpSession session) {
+        CustomerInfo customer = CustomerInfo.getCustomer(session);
         if (customer == null) return ResponseEntity.status(401).body("Authentication required");
 
         Optional<InventoryItem> invOpt = inventoryItemRepository.findBySourceItemId(itemId);
@@ -127,8 +134,8 @@ public class OrderController {
     }
 
     @GetMapping("/getCart")
-    public ResponseEntity<?> GetCart(HttpSession session, HttpServletRequest request) {
-        CustomerInfo customer = CustomerInfo.getCustomer(session, request, jwtService);
+    public ResponseEntity<?> GetCart(HttpSession session) {
+        CustomerInfo customer = CustomerInfo.getCustomer(session);
         if (customer == null) return ResponseEntity.status(401).body("Authentication required");
 
         List<CartItem> cartItems = cartItemRepository.findByCustomerId(customer.getId());
@@ -152,9 +159,8 @@ public class OrderController {
     @PostMapping("/checkout")
     public ResponseEntity<?> Checkout(@RequestParam(required = false) String subscriptionId,
                                     @RequestParam(defaultValue = "false") boolean pickup,
-                                    HttpSession session,
-                                    HttpServletRequest request) {
-        CustomerInfo customer = CustomerInfo.getCustomer(session, request, jwtService);
+                                    HttpSession session) {
+        CustomerInfo customer = CustomerInfo.getCustomer(session);
         if (customer == null) return ResponseEntity.status(401).body("Authentication required");
 
         try {

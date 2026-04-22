@@ -20,6 +20,7 @@ import com.ftf.order.service.CheckoutService;
 import com.ftf.order.service.InventorySyncService;
 import com.ftf.order.service.JwtService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 @RestController
@@ -49,12 +50,19 @@ public class IntegrationController {
     // Called by the customer team when a subscription order should be created.
     // They provide customerId + subscriptionId; we build the order and charge billing.
     @PostMapping("/orders")
-    public ResponseEntity<?> CreateOrder(@RequestBody HashMap<String, Object> body) {
+    public ResponseEntity<?> CreateOrder(@RequestBody HashMap<String, Object> body, HttpServletRequest request) {
+        CustomerInfo caller = jwtService.extractFromHeader(request.getHeader("Authorization"));
+        if (caller == null) return ResponseEntity.status(401).body("Authentication required");
+
         String customerId = (String) body.get("customerId");
         String subscriptionId = (String) body.get("subscriptionId");
 
         if (customerId == null || subscriptionId == null) {
             return ResponseEntity.badRequest().body("customerId and subscriptionId are required");
+        }
+
+        if (!customerId.equals(caller.getId())) {
+            return ResponseEntity.status(403).body("Forbidden");
         }
 
         List<CartItem> cartItems = cartItemRepository.findByCustomerId(customerId);
