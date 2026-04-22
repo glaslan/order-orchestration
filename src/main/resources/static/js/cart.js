@@ -2,6 +2,12 @@
  * CART PAGE LOGIC
  */
 
+function getCsrfToken() {
+  return document.cookie.split('; ')
+      .find(c => c.startsWith('XSRF-TOKEN='))
+      ?.split('=')[1];
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   // Initialize UI states
   updateTotals();
@@ -29,7 +35,10 @@ document.addEventListener("DOMContentLoaded", () => {
           const body = new URLSearchParams({ itemId, quantity: currentQty });
           const res = await fetch("/removeFromCart", {
             method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+              "X-XSRF-TOKEN": getCsrfToken()
+            },
             body,
           });
           if (!res.ok) throw new Error(await res.text());
@@ -52,7 +61,10 @@ document.addEventListener("DOMContentLoaded", () => {
           const body = new URLSearchParams({ itemId, quantity: 1 });
           const res = await fetch("/addToCart", {
             method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+              "X-XSRF-TOKEN": getCsrfToken()
+            },
             body,
           });
           if (!res.ok) throw new Error(await res.text());
@@ -78,7 +90,10 @@ document.addEventListener("DOMContentLoaded", () => {
           const body = new URLSearchParams({ itemId, quantity: 1 });
           const res = await fetch("/removeFromCart", {
             method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+              "X-XSRF-TOKEN": getCsrfToken()
+            },
             body,
           });
           if (!res.ok) throw new Error(await res.text());
@@ -135,7 +150,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const res = await fetch(url, {
           method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-XSRF-TOKEN": getCsrfToken()
+          },
           body,
         });
 
