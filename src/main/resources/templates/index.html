@@ -3,112 +3,112 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
-  <head>
-    <meta charset="utf-8" />
-    <title>Product List</title>
-    <link rel="icon" href="/img/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" th:href="@{/css/custom.css}">
-    <style>
-      /* Hide arrows for Chrome, Safari, Edge, Opera */
-      .no-spinners::-webkit-outer-spin-button,
-      .no-spinners::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-      }
+<head>
+  <meta charset="utf-8" />
+  <title>Product List</title>
+  <link rel="icon" href="/img/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" th:href="@{/css/custom.css}">
+  <style>
+    /* Hide arrows for Chrome, Safari, Edge, Opera */
+    .no-spinners::-webkit-outer-spin-button,
+    .no-spinners::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
 
-      /* Hide arrows for Firefox */
-      .no-spinners {
-        -moz-appearance: textfield;
-        appearance: textfield;
-      }
-    </style>
-  </head>
+    /* Hide arrows for Firefox */
+    .no-spinners {
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+  </style>
+</head>
 
-  <body>
-    <div id="toast-container" class="toast-container position-fixed top-0 start-50 translate-middle-x p-3"
-      style="z-index:9999;display:flex;flex-direction:column;align-items:center;gap:0.5rem;"></div>
+<body>
+  <div id="toast-container" class="toast-container position-fixed top-0 start-50 translate-middle-x p-3"
+    style="z-index:9999;display:flex;flex-direction:column;align-items:center;gap:0.5rem;"></div>
 
-    <nav class="navbar navbar-expand-lg sticky-top navbar-light bg-white border-bottom">
-      <div class="container">
-        <a class="navbar-brand" href="/products">
-          <img th:src="@{/img/F2F-logo.svg}" width="64" height="64" alt="F2F">
-        </a>
+  <nav class="navbar navbar-expand-lg sticky-top navbar-light bg-white border-bottom">
+    <div class="container">
+      <a class="navbar-brand" href="/products">
+        <img th:src="@{/img/F2F-logo.svg}" width="64" height="64" alt="F2F">
+      </a>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
-          <span class="navbar-toggler-icon"></span>
-        </button>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-        <div class="collapse navbar-collapse justify-content-end" id="navbarMain">
+      <div class="collapse navbar-collapse justify-content-end" id="navbarMain">
 
-          <ul class="navbar-nav me-3">
-            <li class="nav-item">
-              <a class="nav-link active text-dark" href="/">Products</a>
-            </li>
-          </ul>
+        <ul class="navbar-nav me-3">
+          <li class="nav-item">
+            <a class="nav-link active text-dark" href="/">Products</a>
+          </li>
+        </ul>
 
-          <div class="d-flex gap-2">
-            <a href="/cartdebug" class="btn btn-outline-primary">Cart</a>
-            <a href="#" class="btn btn-primary">Account</a>
+        <div class="d-flex gap-2">
+          <a href="/cartdebug" class="btn btn-outline-primary">Cart</a>
+          <a href="#" class="btn btn-primary">Account</a>
+        </div>
+
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-5">
+    <div class="row g-2">
+      <div th:if="${#lists.isEmpty(products)}" class="col-12">
+        <p class="text-muted">No products available. Try syncing inventory.</p>
+      </div>
+
+      <div th:each="product : ${products}" class="card w-100">
+        <div class="card-body d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center">
+            <div>
+              <h5 class="card-title fw-bold mb-1 text-primary" th:text="${product.name}">Product Name</h5>
+
+              <p class="text-primary mb-2" th:text="${product.categoryName}">Category</p>
+
+              <span class="badge rounded-pill bg-light text-secondary border border-secondary fw-normal"
+                th:text="${product.quantity} + ' in stock'">0 in stock</span>
+            </div>
           </div>
 
-        </div>
-      </div>
-    </nav>
+          <form th:action="@{/addToCart}" method="post" class="d-flex align-items-center">
+            <input type="hidden" name="name" th:value="${product.name}" />
+            <input type="hidden" name="price" th:value="${product.price}" />
+            <input type="hidden" name="itemId" th:value="${product.sourceItemId}" />
+            <!-- Use d-flex flex-column to stack items vertically -->
+            <div class="d-flex flex-column align-items-end">
 
-    <div class="container mt-5">
-      <div class="row g-2">
-        <div th:if="${#lists.isEmpty(products)}" class="col-12">
-          <p class="text-muted">No products available. Try syncing inventory.</p>
-        </div>
+              <!-- Price at the top -->
+              <p class="mb-2 text-secondary fw-bold"
+                th:text="'$' + ${#numbers.formatDecimal(product.price, 1, 2)} + '/1 loaf'">
+                (No Price Specified)
+              </p>
 
-        <div th:each="product : ${products}" class="card w-100">
-          <div class="card-body d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center">
-              <div>
-                <h5 class="card-title fw-bold mb-1 text-primary" th:text="${product.name}">Product Name</h5>
-
-                <p class="text-primary mb-2" th:text="${product.categoryName}">Category</p>
-
-                <span class="badge rounded-pill bg-light text-secondary border border-secondary fw-normal"
-                  th:text="${product.quantity} + ' in stock'">0 in stock</span>
-              </div>
-            </div>
-
-            <form th:action="@{/addToCart}" method="post" class="d-flex align-items-center">
-              <input type="hidden" name="name" th:value="${product.name}" />
-              <input type="hidden" name="price" th:value="${product.price}" />
-              <input type="hidden" name="itemId" th:value="${product.sourceItemId}" />
-              <!-- Use d-flex flex-column to stack items vertically -->
-              <div class="d-flex flex-column align-items-end">
-
-                <!-- Price at the top -->
-                <p class="mb-2 text-secondary fw-bold"
-                  th:text="'$' + ${#numbers.formatDecimal(product.price, 1, 2)} + '/1 loaf'">
-                  (No Price Specified)
-                </p>
-
-                <div class="d-flex align-items-center">
-                  <div class="input-group me-2" style="width: 8rem;">
-                    <input type="button" value="-" class="btn btn-primary" data-field="quantity" disabled>
-                    <input type="number" value="1" min="1" th:max="${product.quantity}" name="quantity"
-                      class="form-control text-center border-primary no-spinners" />
-                    <input type="button" value="+" class="btn btn-primary" data-field="quantity"
-                      th:disabled="${product.quantity <= 1}">
-                  </div>
-
-                  <button type="submit" class="btn btn-primary">Add to Cart</button>
+              <div class="d-flex align-items-center">
+                <div class="input-group me-2" style="width: 8rem;">
+                  <input type="button" value="-" class="btn btn-primary" data-field="quantity" disabled>
+                  <input type="number" value="1" min="1" th:max="${product.quantity}" name="quantity"
+                    class="form-control text-center border-primary no-spinners" />
+                  <input type="button" value="+" class="btn btn-primary" data-field="quantity"
+                    th:disabled="${product.quantity <= 1}">
                 </div>
 
+                <button type="submit" class="btn btn-primary">Add to Cart</button>
               </div>
-            </form>
 
-          </div>
+            </div>
+          </form>
+
         </div>
       </div>
     </div>
+  </div>
 
-    <script th:src="@{/scss/bootstrap/dist/js/bootstrap.bundle.min.js}"></script>
-    <script th:src="@{/js/index.js}"></script>
-  </body>
+  <script th:src="@{/scss/bootstrap/dist/js/bootstrap.bundle.min.js}"></script>
+  <script th:src="@{/js/index.js}"></script>
+</body>
 
 </html>

@@ -69,14 +69,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Manual input validation
   document.querySelectorAll('input[name="quantity"]').forEach((input) => {
-    input.addEventListener("change", function () {
-      let val = parseInt(this.value);
+    input.addEventListener("input", function () {
+      const val = parseInt(this.value);
       const max = parseInt(this.getAttribute("max") || "9999");
       const min = parseInt(this.getAttribute("min") || "1");
-
-      if (isNaN(val) || val < min) val = min;
-      if (val > max) val = max;
-      this.value = val;
 
       const group = this.closest(".input-group");
       if (group) {
