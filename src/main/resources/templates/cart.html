@@ -5,6 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <title>Cart</title>
+    <link rel="icon" href="/img/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" th:href="@{/css/custom.css}">
     <style>
       /* Hide arrows for Chrome, Safari, Edge, Opera */
@@ -99,7 +100,7 @@
                 
                 <div class="input-group" style="width: 8rem;">
                   <input type="button" value="-" class="btn btn-primary" data-field="quantity">
-                  <input readonly type="number" 
+                  <input type="number" 
                     th:value="${item.cartItem.quantity}" 
                     min="1" 
                     th:max="${item.inventoryItem.quantity}" 
@@ -230,32 +231,23 @@
           .replace('$', '')
           .replace(' CAD', '');
         
-        // This is the current line total; divide by old qty to get unit price
         const oldQty = parseInt(input.dataset.initial) || 1;
         const unitPrice = parseFloat(priceText) / oldQty || 0;
-        
-        // Calculate new line total
         const newLineTotal = unitPrice * qty;
         
-        // Update the cell
         priceCell.textContent = '$' + newLineTotal.toFixed(2);
       }
+
       function updateTotals() {
         let subtotal = 0;
         
-        // For each cart item, get unit price and qty, then multiply
         document.querySelectorAll('input[name="quantity"]').forEach(input => {
           const form = input.closest('form');
           if (!form) return;
           
-          const qty = parseInt(input.value) || 0;
-          
-          // Walk up to the .row and find the price cell
           const row = input.closest('.row');
           if (!row) return;
           
-          // The price cell is the 2nd .col inside this row
-          // It contains "$XX.XX" text
           const cols = row.querySelectorAll('.col');
           if (cols.length < 2) return;
           
@@ -265,7 +257,6 @@
             .replace(' CAD', '');
           const totalPrice = parseFloat(priceText) || 0;
           
-          // totalPrice is already (unit_price × qty), so just add it
           subtotal += totalPrice;
         });
         
@@ -277,23 +268,13 @@
         document.getElementById('total-value').textContent = 
           '$' + total.toFixed(2) + ' CAD';
       }
-      // Call on page load and after any quantity change
-      updateTotals();
-      document.querySelectorAll('input[name="quantity"]').forEach(input => {
-        input.addEventListener('change', updateTotals);
-      });
-      document.querySelectorAll('input[type="button"][value="+"], input[type="button"][value="-"]').forEach(btn => {
-        btn.addEventListener('click', () => setTimeout(updateTotals, 50));
-      });
-      document.querySelectorAll('a.btn-danger').forEach(btn => {
-        btn.addEventListener('click', () => setTimeout(updateTotals, 100));
-      });
-      function showToast(message) {
+
+      function showToast(message, type = 'success') {
         const container = document.getElementById('toast-container');
         if (!container) return;
 
         const toast = document.createElement('div');
-        toast.className = 'toast align-items-center text-white bg-success border-0 mb-2';
+        toast.className = `toast align-items-center text-white bg-${type} border-0 mb-2`;
         toast.setAttribute('role', 'alert');
         toast.setAttribute('aria-live', 'polite');
         toast.setAttribute('aria-atomic', 'true');
@@ -320,17 +301,14 @@
         }
       }
 
-      // Removes the entire row from the DOM for a given itemId
       function removeRowFromDOM(itemId) {
         document.querySelectorAll('.input-group').forEach(group => {
           const form = group.closest('form');
           if (!form) return;
           const id = (form.querySelector('input[name="itemId"]') || {}).value;
           if (String(id) === String(itemId)) {
-            // Walk up to the wrapping .row that contains the <hr> + columns
             const row = form.closest('.row');
             if (row) {
-              // Also remove the <hr> that precedes this row
               const prev = row.previousElementSibling;
               if (prev && prev.tagName === 'HR') prev.remove();
               row.remove();
@@ -339,36 +317,35 @@
         });
       }
 
-      // Sync the disabled state of both buttons for a given input
       function syncButtons(input) {
         const group = input.closest('.input-group');
         if (!group) return;
         const btnMinus = group.querySelector('input[value="-"]');
-        const btnPlus  = group.querySelector('input[value="+"]');
+        const btnPlus = group.querySelector('input[value="+"]');
         const val = parseInt(input.value);
         const min = parseInt(input.getAttribute('min') || '1');
         const max = parseInt(input.getAttribute('max') || '9999');
         if (btnMinus) btnMinus.disabled = (val <= min);
-        if (btnPlus)  btnPlus.disabled  = (val >= max);
+        if (btnPlus) btnPlus.disabled = (val >= max);
       }
 
-      // initialise button states on page load 
+      // Initialize on page load
+      updateTotals();
       document.querySelectorAll('input[name="quantity"]').forEach(input => {
         syncButtons(input);
       });
 
-      // +/- buttons 
+      // +/- buttons
       document.querySelectorAll('.input-group').forEach(group => {
         const btnMinus = group.querySelector('input[value="-"]');
-        const btnPlus  = group.querySelector('input[value="+"]');
-        const input    = group.querySelector('input[name="quantity"]');
-        const form     = group.closest('form');
+        const btnPlus = group.querySelector('input[value="+"]');
+        const input = group.querySelector('input[name="quantity"]');
+        const form = group.closest('form');
         if (!input || !form) return;
 
         const itemIdInput = form.querySelector('input[name="itemId"]');
         const itemId = (itemIdInput || {}).value;
 
-        // remove button (anchored outside the input-group but inside the form)
         const trashBtn = form.querySelector('a.btn-danger');
         if (trashBtn) {
           trashBtn.addEventListener('click', async e => {
@@ -386,12 +363,11 @@
               updateTotals();
               showToast('Item removed from cart');
             } catch (err) {
-              showToast('Error: ' + err.message);
+              showToast('Error: ' + err.message, 'danger');
             }
           });
         }
 
-        // plus
         if (btnPlus) {
           btnPlus.addEventListener('click', async () => {
             const max = parseInt(input.getAttribute('max') || '9999');
@@ -413,12 +389,11 @@
               updateTotals();
               showToast('Quantity updated');
             } catch (err) {
-              showToast('Error: ' + err.message);
+              showToast('Error: ' + err.message, 'danger');
             }
           });
         }
 
-        // minus
         if (btnMinus) {
           btnMinus.addEventListener('click', async () => {
             const min = parseInt(input.getAttribute('min') || '1');
@@ -440,10 +415,98 @@
               updateTotals();
               showToast('Quantity updated');
             } catch (err) {
-              showToast('Error: ' + err.message);
+              showToast('Error: ' + err.message, 'danger');
             }
           });
         }
+      });
+
+      // Manual quantity input handler
+      document.querySelectorAll('input[name="quantity"]').forEach(input => {
+        input.addEventListener('change', async function(e) {
+          let val = parseInt(this.value);
+          const max = parseInt(this.getAttribute('max') || '9999');
+          const min = parseInt(this.getAttribute('min') || '1');
+          const initial = parseInt(this.dataset.initial || this.getAttribute('value') || min);
+          
+          // Validate BEFORE any fetch
+          if (isNaN(val) || val < min) {
+            val = min;
+            this.value = val;
+            showToast(`Quantity must be at least ${min}`, 'warning');
+            return;
+          }
+          if (val > max) {
+            showToast(`Only ${max} in stock`, 'danger');
+            this.value = initial;
+            return;
+          }
+          
+          const form = this.closest('form');
+          if (!form) return;
+          
+          const action = form.getAttribute('action') || form.getAttribute('th:action');
+          if (!action?.includes('/addToCart')) return;
+          
+          const delta = val - initial;
+          
+          if (delta === 0) return;
+          
+          try {
+            const itemIdInput = form.querySelector('input[name="itemId"]');
+            const itemId = itemIdInput?.value;
+            if (!itemId) return;
+            
+            if (delta > 0) {
+              const body = new URLSearchParams({ itemId, quantity: delta });
+              const res = await fetch('/addToCart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body,
+              });
+              if (!res.ok) {
+                const errMsg = await res.text();
+                throw new Error(errMsg);
+              }
+            } else if (delta < 0) {
+              const body = new URLSearchParams({ itemId, quantity: Math.abs(delta) });
+              const res = await fetch('/removeFromCart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body,
+              });
+              if (!res.ok) {
+                const errMsg = await res.text();
+                throw new Error(errMsg);
+              }
+            }
+            
+            this.dataset.initial = val;
+            
+            const group = this.closest('.input-group');
+            if (group) {
+              const btnMinus = group.querySelector('input[value="-"]');
+              const btnPlus = group.querySelector('input[value="+"]');
+              if (btnMinus) btnMinus.disabled = (val <= min);
+              if (btnPlus) btnPlus.disabled = (val >= max);
+            }
+            
+            updatePriceCell(this);
+            updateTotals();
+            showToast('Quantity updated', 'success');
+          } catch (err) {
+            showToast(err.message, 'danger');
+            this.value = initial;
+          }
+        });
+
+        // Prevent form submission on Enter key
+        input.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            this.blur();
+          }
+        });
       });
     </script>
   </body>
