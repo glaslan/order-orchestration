@@ -28,7 +28,7 @@ jobs:
     - name: Build with Maven
       run: mvn -B package --file pom.xml
 
-build-image-and-push:
+  build-image-and-push:
     runs-on: ubuntu-latest
     needs: build
     steps:
