@@ -4,8 +4,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
-          memory: 64M
+          cpus: '1'
+          memory: 100M
     container_name: orders
     ports:
       - "6767:6767"
