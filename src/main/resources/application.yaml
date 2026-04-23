@@ -11,7 +11,14 @@ spring:
     open-in-view: false
 
 jwt:
-  secret: ${JWT_SECRET:farm2fork-secret-key}
+  secret: ${JWT_SECRET:farm2fork-orders-dev-secret-key!}
+
+server:
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        same-site: lax
 
 teams:
   customer:

@@ -12,9 +12,6 @@ import com.ftf.order.model.CustomerInfo;
 import com.ftf.order.model.InventoryItem;
 import com.ftf.order.repository.CartItemRepository;
 import com.ftf.order.repository.InventoryItemRepository;
-import com.ftf.order.service.JwtService;
-
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
@@ -22,13 +19,10 @@ public class UIController {
 
     private final InventoryItemRepository inventoryItemRepository;
     private final CartItemRepository cartItemRepository;
-    private final JwtService jwtService;
 
-
-    public UIController(InventoryItemRepository inventoryItemRepository, CartItemRepository cartItemRepository, JwtService jwtService) {
+    public UIController(InventoryItemRepository inventoryItemRepository, CartItemRepository cartItemRepository) {
         this.inventoryItemRepository = inventoryItemRepository;
         this.cartItemRepository = cartItemRepository;
-        this.jwtService = jwtService;
     }
 
     @GetMapping("/")
@@ -44,9 +38,9 @@ public class UIController {
     }
 
     @GetMapping("/cart")
-    public String cart(Model model, HttpSession session, HttpServletRequest request) {
-        CustomerInfo customer = CustomerInfo.getCustomer(session, request, jwtService);
-        if (customer == null) return null;
+    public String cart(Model model, HttpSession session) {
+        CustomerInfo customer = CustomerInfo.getCustomer(session);
+        if (customer == null) return "redirect:/products";
 
         List<CartItem> cartItems = cartItemRepository.findByCustomerId(customer.getId());
 
@@ -63,22 +57,4 @@ public class UIController {
         return "cart";
     }
 
-    @GetMapping("/cartdebug")
-    public String cartdebug(Model model) {
-
-        List<CartItem> cartItems = cartItemRepository.findByCustomerId("123456789");
-        System.out.println("sise"+cartItems.size());
-
-        // Create a list of objects containing both cart item and inventory item data
-        List<CartItemWithInventory> cartItemsWithInventory = cartItems.stream()
-                .map(cartItem -> {
-                    InventoryItem inventoryItem = inventoryItemRepository.findById(cartItem.getInventoryItemId())
-                            .orElse(null);
-                    return new CartItemWithInventory(cartItem, inventoryItem);
-                })
-                .toList();
-
-        model.addAttribute("items", cartItemsWithInventory);
-        return "cart";
-    }
 }

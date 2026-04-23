@@ -2,6 +2,12 @@
  * PRODUCT LIST PAGE LOGIC
  */
 
+function getCsrfToken() {
+  return document.cookie.split('; ')
+      .find(c => c.startsWith('XSRF-TOKEN='))
+      ?.split('=')[1];
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   // Intercept add-to-cart forms
   document.querySelectorAll("form").forEach((form) => {
@@ -24,7 +30,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const fd = new URLSearchParams(new FormData(this));
       fetch("/addToCart", {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-XSRF-TOKEN": getCsrfToken()
+        },
         body: fd,
       })
         .then(async (r) => {
