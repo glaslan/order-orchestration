@@ -5,7 +5,7 @@ services:
       resources:
         limits:
           cpus: '0.25'
-          memory: 512M
+          memory: 64M
     container_name: orders
     ports:
       - "6767:6767"
