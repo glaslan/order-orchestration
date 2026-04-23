@@ -4,7 +4,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.50'
+          cpus: '0.25'
           memory: 512M
     container_name: orders
     ports:
