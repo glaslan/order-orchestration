@@ -1,6 +1,11 @@
 services:
   app:
     image: ghcr.io/glaslan/order-orchestration:latest
+    deploy:
+      resources:
+        limits:
+          cpus: '1.50'
+          memory: 512M
     container_name: orders
     ports:
       - "6767:6767"
