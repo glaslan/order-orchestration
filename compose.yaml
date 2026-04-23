@@ -1,7 +1,7 @@
 services:
   app:
-    build: .
-    container_name: spring_app
+    image: ghcr.io/glaslan/order-orchestration:latest
+    container_name: orders
     ports:
       - "6767:6767"
     depends_on:
