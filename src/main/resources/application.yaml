@@ -12,7 +12,7 @@ spring:
 
 jwt:
   # Must match the customer team's JWT_SECRET — they sign, we verify.
-  secret: ${JWT_SECRET:farm2fork-secret-key}
+  secret: ${JWT_SECRET:farm2fork-super-secret-2026-prod}
 
 server:
   servlet:
