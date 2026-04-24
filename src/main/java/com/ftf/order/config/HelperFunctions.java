@@ -68,7 +68,7 @@ public class HelperFunctions {
                 
             });
 
-            restTemplate.postForObject("http://134.122.40.121:5180/api/inventory_intelligence/inventory/sold_items", soldItems, Void.class);
+            restTemplate.postForObject(url, soldItems, Void.class);
         } catch (Exception e) {
             System.err.println("Failed to send sold items to inventory intelligence: " + e.getMessage());
         }

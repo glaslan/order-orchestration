@@ -39,6 +39,12 @@ public class CheckoutService {
     @Value("${teams.delivery.url}")
     private String deliveryUrl;
 
+    @Value("${teams.inventory.base-url}")
+    private String inventoryBaseUrl;
+
+    @Value("${teams.inventory.sold-items-path}")
+    private String inventorySoldItemsPath;
+
     public CheckoutService(CartItemRepository cartItemRepository,
                            InventoryItemRepository inventoryItemRepository,
                            OrderManifestRepository orderManifestRepository,
@@ -118,7 +124,7 @@ public class CheckoutService {
 
                 sendToDelivery(manifest, customer, orderItems, pickup);
                 HelperFunctions helper = new HelperFunctions();
-                helper.SendSoldItems("http://134.122.40.121:5180/api/inventory_intelligence/inventory/sold_items", orderItems, inventoryItemRepository, restTemplate);
+                helper.SendSoldItems(inventoryBaseUrl + inventorySoldItemsPath, orderItems, inventoryItemRepository, restTemplate);
 
                 manifest.setStatus("DELIVERED");
                 manifest.setUpdatedAt(LocalDateTime.now());
@@ -159,7 +165,7 @@ public class CheckoutService {
 
             DeliveryOrder order = new DeliveryOrder(manifest.getId(), customer.getId(), LocalDateTime.now().toString(), pickup, itemList);
 
-            restTemplate.postForObject(deliveryUrl + "/api/delivery-requests", order, Void.class);
+            restTemplate.postForObject(deliveryUrl + "/api/delivery-requests/", order, Void.class);
         } catch (Exception e) {
             // Delivery notification failing should not roll back a successful payment
             System.err.println("Delivery notification failed for order " + manifest.getId() + ": " + e.getMessage());

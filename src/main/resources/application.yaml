@@ -11,7 +11,8 @@ spring:
     open-in-view: false
 
 jwt:
-  secret: ${JWT_SECRET:farm2fork-orders-dev-secret-key!}
+  # Must match the customer team's JWT_SECRET — they sign, we verify.
+  secret: ${JWT_SECRET:farm2fork-secret-key}
 
 server:
   servlet:
@@ -22,6 +23,11 @@ server:
 
 teams:
   customer:
-    url: ${CUSTOMER_URL:http://147.182.145.77:3000}
+    url: ${CUSTOMER_URL:http://159.203.16.186:3000}
+    login-url: ${CUSTOMER_LOGIN_URL:http://159.203.16.186:3000/login.html}
   delivery:
-    url: ${DELIVERY_URL:http://147.182.145.77:3000}
+    url: ${DELIVERY_URL:http://147.182.145.77:8000}
+  inventory:
+    base-url: ${INVENTORY_BASE_URL:http://134.122.40.121:5180/api/inventory_intelligence/inventory}
+    all-items-path: ${INVENTORY_ALL_ITEMS_PATH:/all_items}
+    sold-items-path: ${INVENTORY_SOLD_ITEMS_PATH:/sold_items}

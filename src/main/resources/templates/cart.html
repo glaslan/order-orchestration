@@ -44,7 +44,7 @@
           </ul>
 
           <div class="d-flex gap-2">
-            <a href="/cartdebug" class="btn btn-outline-primary">Cart</a>
+            <a href="/cart" class="btn btn-outline-primary">Cart</a>
             <a href="#" class="btn btn-primary">Account</a>
           </div>
 
@@ -96,7 +96,7 @@
             </div>
             <div class="col mx-5 text-center">
               <form th:action="@{/addToCart}" method="post" class="d-flex align-items-center justify-content-center gap-2">
-                <input type="hidden" name="itemId" th:value="${item.inventoryItem.sourceItemId}" />
+                <input type="hidden" name="itemId" th:value="${item.inventoryItem.id}" />
                 
                 <div class="input-group" style="width: 8rem;">
                   <input type="button" value="-" class="btn btn-primary" data-field="quantity">
@@ -110,7 +110,7 @@
                   <input type="button" value="+" class="btn btn-primary" data-field="quantity">
                 </div>
                 
-                <a th:href="@{/removeFromCart(itemId=${item.inventoryItem.sourceItemId},quantity=${item.cartItem.quantity})}" class="btn btn-sm btn-danger p-2"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                <a th:href="@{/removeFromCart(itemId=${item.inventoryItem.id},quantity=${item.cartItem.quantity})}" class="btn btn-sm btn-danger p-2"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
                     <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
                     <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
                   </svg>

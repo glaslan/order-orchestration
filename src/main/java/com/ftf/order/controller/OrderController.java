@@ -72,8 +72,8 @@ public class OrderController {
         CustomerInfo customer = CustomerInfo.getCustomer(session);
         if (customer == null) return ResponseEntity.status(401).body("Authentication required");
 
-        // Look up by sourceItemId — that's what the UI sends via the hidden input
-        Optional<InventoryItem> invOpt = inventoryItemRepository.findBySourceItemId(itemId);
+        // itemId from the UI is our internal inventory_item.id
+        Optional<InventoryItem> invOpt = inventoryItemRepository.findById(itemId);
         if (invOpt.isEmpty() || !invOpt.get().isActive()) {
             return ResponseEntity.badRequest().body("Item not available");
         }
@@ -114,7 +114,7 @@ public class OrderController {
         CustomerInfo customer = CustomerInfo.getCustomer(session);
         if (customer == null) return ResponseEntity.status(401).body("Authentication required");
 
-        Optional<InventoryItem> invOpt = inventoryItemRepository.findBySourceItemId(itemId);
+        Optional<InventoryItem> invOpt = inventoryItemRepository.findById(itemId);
         if (invOpt.isEmpty()) return ResponseEntity.badRequest().body("Item not found");
 
         Optional<CartItem> cartOpt = cartItemRepository.findByCustomerIdAndInventoryItemId(
@@ -144,7 +144,7 @@ public class OrderController {
         List<Map<String, Object>> result = cartItems.stream().map(ci -> {
             Map<String, Object> entry = new HashMap<>();
             inventoryItemRepository.findById(ci.getInventoryItemId()).ifPresent(inv -> {
-                entry.put("sourceItemId", inv.getSourceItemId());
+                entry.put("id", inv.getId());
                 entry.put("name", inv.getName());
                 entry.put("price", inv.getPrice());
                 entry.put("categoryName", inv.getCategoryName());

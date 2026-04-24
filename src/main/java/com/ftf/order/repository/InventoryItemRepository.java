@@ -10,9 +10,8 @@ import com.ftf.order.model.InventoryItem;
 // interface definition for JPA
 public interface InventoryItemRepository extends JpaRepository<InventoryItem, Long> {
 
-    // generates query for finding inventory item by source id, optional may return
-    // value or not
-    Optional<InventoryItem> findBySourceItemId(Long sourceItemId);
+    // inventory team keys items by name, so we do too for sync lookups
+    Optional<InventoryItem> findByName(String name);
 
     // pulls all active items only
     List<InventoryItem> findByActiveTrue();

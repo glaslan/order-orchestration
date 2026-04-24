@@ -29,15 +29,8 @@ public class InventoryItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //remove source ID, they dont need it - they string match to remove items from inventory
-    //when we send a sale to inv, they will return success/failure for the update
-    //we will control the choice to pull database again
-
-    // inventory team's item id
-    @Column(name = "source_item_id", nullable = false, unique = true)
-    private Long sourceItemId;
-
-    @Column(nullable = false)
+    // inventory team string-matches by name, so name is the natural key for sync
+    @Column(nullable = false, unique = true)
     private String name;
 
     @Column(nullable = false)
@@ -51,6 +44,18 @@ public class InventoryItem {
 
     @Column(name = "category_name")
     private String categoryName;
+
+    @Column(name = "parent_category_id")
+    private Long parentCategoryId;
+
+    @Column(name = "parent_category_name")
+    private String parentCategoryName;
+
+    @Column(name = "category_level")
+    private Integer categoryLevel;
+
+    @Column(name = "last_stock_date")
+    private LocalDateTime lastStockDate;
 
     @Column(name = "last_synced_at", nullable = false)
     private LocalDateTime lastSyncedAt;
