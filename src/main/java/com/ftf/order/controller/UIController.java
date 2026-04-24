@@ -31,10 +31,17 @@ public class UIController {
     }
 
     @GetMapping("/products")
-    public String products(Model model) {
+    public String products(Model model, Httpsession session, CustomerInfo customer) {
+
         List<InventoryItem> products = inventoryItemRepository.findByActiveTrue();
         model.addAttribute("products", products);
-        return "index";
+            CustomerInfo customer = jwtService.parse(token);
+            session.invalidate();
+            HttpSession fresh = request.getSession(true);
+            fresh.setAttribute("customer", customer);
+            return "index";
+        
+
     }
 
     @GetMapping("/cart")
