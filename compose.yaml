@@ -1,12 +1,11 @@
 services:
   app:
-    build: .
     image: ghcr.io/glaslan/order-orchestration:latest
     deploy:
       resources:
         limits:
           cpus: '1'
-          memory: 512M
+          memory: 300M
     container_name: orders
     ports:
       - "6767:6767"
@@ -18,9 +17,7 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      # Must match customer team's JWT_SECRET on their deployed server.
-      # Their fallback default is 'farm2fork-secret-key' but prod likely overrides.
-      JWT_SECRET: ${JWT_SECRET:-farm2fork-secret-key}
+      JWT_SECRET: farm2fork-orders-dev-secret-key!
     restart: unless-stopped
 
   postgres:
@@ -40,14 +37,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
-    restart: unless-stopped
-
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    container_name: cloudflared
-    command: tunnel --no-autoupdate --url http://app:6767
-    depends_on:
-      - app
     restart: unless-stopped
 
 volumes:
